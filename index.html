@@ -3,7 +3,7 @@
 <head>
   <base target="_top">
   <meta charset="UTF-8">
-  <title>유튜브 썸네일 생성기 V15.23 - 상호작용 최적화판</title>
+  <title>유튜브 썸네일 생성기 V15.22 - 정밀 동기화판</title>
   <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Gothic+A1:wght@400;700;900&family=Nanum+Brush+Script&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@100;400;700;900&family=Poor+Story&family=Song+Myung&family=Sunflower:wght@300;500;700&family=Jua&family=Gamja+Flower&family=Hi+Melody&family=Kirang+Haerang&family=Single+Day&family=Cute+Font&family=Gaegu&family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;600;700&family=Bagel+Fat+One&family=Dongle:wght@400;700&family=Orbit&family=Black+And+White+Picture&family=Dokdo&family=East+Sea+Dokdo&family=Hahmlet:wght@400;700&family=Yeon+Sung&family=Gugi&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -380,7 +380,8 @@
       color: var(--text-sub);
       font-weight: bold;
     }
-
+    
+    /* [글꼴 선택창 하얀 스크롤바 제거] */
     #fontFamily {
       background:#111; 
       color:#fff; 
@@ -524,7 +525,7 @@
         </div>
 
         <div class="detail-item">
-          <label>그림자 농도</label>
+          <label>그림자</label>
           <input type="range" id="shadowBlur" min="0" max="100" value="0" oninput="handleInteraction(this, 0, false)">
         </div>
 
@@ -674,12 +675,19 @@
   function updateCanvasTransform() { canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`; }
   function applyZoom() { zoomLevel = parseFloat(document.getElementById('zoomRange').value); updateCanvasTransform(); }
 
-  /* [굵기만 2번 토글하여 시각적 불편함 최소화] */
+  /* [순차적 상호작용: 20ms 딜레이를 주어 브라우저 인식 유도] */
   function refreshFont() {
-    const delay = 15;
+    const delay = 20;
     setTimeout(() => { toggleStyle('btnBold'); }, 0);
     setTimeout(() => { toggleStyle('btnBold'); }, delay);
-    setTimeout(() => { draw(true); }, delay * 2);
+    
+    setTimeout(() => { toggleStyle('btnItalic'); }, delay * 2);
+    setTimeout(() => { toggleStyle('btnItalic'); }, delay * 3);
+    
+    setTimeout(() => { toggleGuide('guideHitbox'); }, delay * 4);
+    setTimeout(() => { toggleGuide('guideHitbox'); }, delay * 5);
+    
+    setTimeout(() => { draw(true); }, delay * 6);
   }
 
   window.onload = () => {
