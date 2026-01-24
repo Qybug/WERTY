@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <title>유튜브 썸네일 생성기 V15.21 - 폰트 동기화 강화판</title>
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Gothic+A1:wght@400;700;900&family=Nanum+Brush+Script&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@100;400;700;900&family=Poor+Story&family=Song+Myung&family=Sunflower:wght@300;500;700&family=Jua&family=Gamja+Flower&family=Hi+Melody&family=Kirang+Haerang&family=Single+Day&family=Cute+Font&family=Gaegu&family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;600;700&family=Bagel+Fat+One&family=Dongle:wght@400;700&family=Orbit&family=Black+And+White+Picture&family=Dokdo&family=East+Sea+Dokdo&family=Hahmlet:wght@400;700&family=Yeon+Sung&family=Gugi&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #050505;
+      --panel-bg: #0d0d0d;
+      --slider-track: #1a1a1a;
+      --accent-color: #ffffff;
+      --text-main: #ffffff;
+      --text-sub: #888888;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Noto Sans KR', sans-serif;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    #layout-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body.detailed-mode:not(.zoom-mode) #layout-container {
+      transform: translateX(-160px);
+    }
+
+    #app-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .top-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 25px;
+      width: 880px;
+      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+    }
+
+    body.zoom-mode .top-section {
+      opacity: 0;
+      transform: translateY(-20px);
+      pointer-events: none;
+      visibility: hidden;
+    }
+
+    .app-title {
+      font-size: 24px;
+      font-weight: 900;
+      font-style: italic;
+      color: #ddd;
+      letter-spacing: -1px;
+    }
+
+    .control-bar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    #mainText {
+      background: #111;
+      border: 1px solid #444;
+      color: white;
+      padding: 8px 15px;
+      width: 280px;
+      border-radius: 4px;
+      outline: none;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .top-color-wrap {
+      width: 40px;
+      height: 30px;
+      border: 1px solid #555;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .top-color-wrap input {
+      position: absolute;
+      top: -5px;
+      left: -5px;
+      width: 60px;
+      height: 45px;
+      border: none;
+      cursor: pointer;
+    }
+
+    button {
+      background: #111;
+      border: 1px solid #444;
+      color: #ddd;
+      padding: 7px 12px;
+      cursor: pointer;
+      border-radius: 3px;
+      font-size: 11px;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    button:hover {
+      background: #222;
+    }
+
+    button.active {
+      background: #ddd;
+      color: #000;
+      font-weight: bold;
+      border-color: #fff;
+    }
+
+    .editor-area {
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+      position: relative;
+    }
+
+    .y-axis-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 495px;
+      position: relative;
+      width: 50px;
+      transition: height 0.3s;
+    }
+
+    body.zoom-mode .y-axis-container {
+      height: 569px;
+    }
+
+    .y-label-top {
+      position: absolute;
+      top: -35px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: var(--text-sub);
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--slider-track);
+      outline: none;
+      border-radius: 1px;
+    }
+
+    input[type=range]::-webkit-slider-runnable-track {
+      background: transparent;
+      height: 2px;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      background: white;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 1px solid #000;
+      margin-top: -5px;
+    }
+
+    .y-slider-rotated {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 495px !important;
+      height: 2px !important;
+      transform: translate(-50%, -50%) rotate(270deg);
+      margin: 0;
+      cursor: pointer;
+      transition: width 0.3s;
+    }
+
+    body.zoom-mode .y-slider-rotated {
+      width: 569px !important;
+    }
+
+    .center-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .preview-container {
+      position: relative;
+      border: 1px solid #aaa;
+      line-height: 0;
+      background: #000;
+      width: 880px;
+      height: 495px;
+      overflow: hidden;
+      box-sizing: content-box;
+      z-index: 10;
+      transition: width 0.3s, height 0.3s;
+    }
+
+    body.zoom-mode .preview-container {
+      width: 1012px;
+      height: 569px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      transform-origin: center;
+      transition: transform 0.1s linear;
+    }
+
+    .x-slider-wrap {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      width: 880px;
+      transition: width 0.3s;
+    }
+
+    body.zoom-mode .x-slider-wrap {
+      width: 1012px;
+    }
+
+    .x-label-bottom {
+      font-size: 11px;
+      color: var(--text-sub);
+      font-weight: bold;
+    }
+
+    .x-slider-bar {
+      width: 100% !important;
+      height: 2px !important;
+    }
+
+    #zoom-v-container {
+      display: none;
+      width: 24px;
+      height: 569px;
+      position: relative;
+      margin-left: 15px;
+    }
+
+    body.zoom-mode #zoom-v-container {
+      display: block;
+    }
+
+    .pyramid-visual-track {
+      position: absolute;
+      width: 24px;
+      height: 569px;
+      background: #222;
+      clip-path: polygon(45% 0%, 55% 0%, 100% 100%, 0% 100%);
+      border-radius: 12px; 
+      z-index: 1;
+      left: 0;
+    }
+
+    .wedge-zoom-v {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 569px !important;
+      height: 24px !important;
+      background: transparent !important;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(270deg);
+      cursor: pointer;
+      z-index: 5;
+      margin: 0;
+    }
+
+    .wedge-zoom-v::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #fff;
+      border: 3px solid #000;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .detail-toggle-btn {
+      position: absolute;
+      right: 0;
+      top: -30px;
+      background: #222;
+      border: 1px solid #444;
+      color: #ccc;
+      padding: 4px 10px;
+      cursor: pointer;
+      border-radius: 3px;
+      font-size: 11px;
+      z-index: 20;
+      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+    }
+
+    body.zoom-mode .detail-toggle-btn {
+      opacity: 0;
+      transform: translateY(-10px);
+      pointer-events: none;
+      visibility: hidden;
+    }
+
+    #detail-panel {
+      position: absolute;
+      left: 100%;
+      top: 0;
+      margin-left: 15px;
+      width: 310px;
+      height: 495px;
+      background: var(--panel-bg);
+      border: 1px solid #333;
+      padding: 18px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s;
+      overflow-y: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    #detail-panel::-webkit-scrollbar {
+      display: none;
+    }
+
+    .detailed-mode #detail-panel {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    body.zoom-mode #detail-panel {
+      display: none !important;
+    }
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 11px;
+      border-bottom: 1px solid #222;
+      padding-bottom: 12px;
+    }
+
+    .detail-item label {
+      color: var(--text-sub);
+      font-weight: bold;
+    }
+
+    .thin-color-bar {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px 3px 0 0;
+      border: 1px solid #444;
+      position: relative;
+    }
+
+    .thin-color-bar input {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body id="body">
+
+<div id="layout-container">
+  <div id="app-wrapper">
+    <div class="top-section">
+      <div class="app-title">썸네일 생성기</div>
+      <div class="control-bar">
+        <input type="text" id="mainText" placeholder="텍스트 입력" oninput="draw(true)">
+        <div class="top-color-wrap">
+          <input type="color" id="bgColor" value="#000000" oninput="handleBgColorChange()">
+        </div>
+        <div class="top-color-wrap">
+          <input type="color" id="textColor" value="#ff0000" oninput="draw(false)">
+        </div>
+        <button onclick="downloadImage()">다운로드</button>
+      </div>
+    </div>
+
+    <div class="editor-area">
+      <div class="y-axis-container">
+        <span class="y-label-top">높이(Y)</span>
+        <input type="range" id="posY" class="y-slider-rotated" min="0" max="900" value="450" oninput="handleInteraction(this, 450)">
+      </div>
+
+      <div class="center-column">
+        <div style="position:relative;">
+          <button class="detail-toggle-btn" onclick="toggleDetail()">상세 설정 ⚙️</button>
+          <div class="preview-container" id="p-container" onmousedown="handleMouseDown(event)" onmouseup="handleMouseUp(event)">
+            <canvas id="canvas" width="1600" height="900"></canvas>
+          </div>
+        </div>
+        <div class="x-slider-wrap">
+          <input type="range" id="posX" class="x-slider-bar" min="0" max="1600" value="800" oninput="handleInteraction(this, 800)">
+          <span class="x-label-bottom">가로 (X)</span>
+        </div>
+      </div>
+
+      <div id="zoom-v-container">
+        <div class="pyramid-visual-track"></div>
+        <input type="range" id="zoomRange" class="wedge-zoom-v" min="1" max="3" step="0.01" value="1" oninput="applyZoom()">
+      </div>
+
+      <div id="detail-panel">
+        <div class="detail-item">
+          <label>글꼴 및 스타일</label>
+          <select id="fontFamily" onchange="refreshFont()" style="background:#111; color:#fff; border:1px solid #333; padding:6px; width:100%;">
+            <option value="'Noto Sans KR'">본고딕</option>
+            <option value="'Black Han Sans'">검은고딕</option>
+            <option value="'Do Hyeon'">도현체</option>
+            <option value="'Jua'" selected>주아체</option>
+            <option value="'Nanum Gothic'">나눔고딕</option>
+            <option value="'Nanum Myeongjo'">나눔명조</option>
+            <option value="'Gothic A1'">고딕 A1</option>
+            <option value="'IBM Plex Sans KR'">IBM Plex Sans</option>
+            <option value="'Gowun Dodum'">고운돋움</option>
+            <option value="'Gowun Batang'">고운바탕</option>
+            <option value="'Orbit'">오르빗</option>
+            <option value="'Bagel Fat One'">베이글 팻 원</option>
+            <option value="'Dongle'">동글</option>
+            <option value="'Black And White Picture'">흑백사진</option>
+            <option value="'Sunflower'">해바라기</option>
+            <option value="'Song Myung'">송명</option>
+            <option value="'Poor Story'">푸어 스토리</option>
+            <option value="'Nanum Pen Script'">나눔펜체</option>
+            <option value="'Nanum Brush Script'">나눔붓체</option>
+            <option value="'Gamja Flower'">감자꽃체</option>
+            <option value="'Hi Melody'">하이멜로디</option>
+            <option value="'Kirang Haerang'">기랑해랑</option>
+            <option value="'Single Day'">싱글데이</option>
+            <option value="'Cute Font'">큐트폰트</option>
+            <option value="'Gaegu'">개구체</option>
+            <option value="'Dokdo'">독도체</option>
+            <option value="'East Sea Dokdo'">동해독도체</option>
+            <option value="'Hahmlet'">함렛</option>
+            <option value="'Yeon Sung'">연성체</option>
+            <option value="'Gugi'">구기체</option>
+          </select>
+          <div style="display:flex; gap:8px; margin-top:5px;">
+            <button id="btnBold" class="active" onclick="toggleStyle('btnBold')">굵게</button>
+            <button id="btnItalic" class="active" onclick="toggleStyle('btnItalic')">기울임</button>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <label>정렬 & 가이드</label>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div class="guide-control-group">
+              <div class="thin-color-bar" id="crossBtnWrap" style="background:#ffffff;">
+                <input type="color" value="#ffffff" oninput="updateBtnColor('crossBtnWrap', this.value); draw(false);">
+              </div>
+              <button id="guideCross" style="width:100%;" onclick="toggleGuide('guideCross')">십자선 OFF</button>
+            </div>
+            <div class="guide-control-group">
+              <div class="thin-color-bar" id="hitboxBtnWrap" style="background:#00ff00;">
+                <input type="color" value="#00ff00" oninput="updateBtnColor('hitboxBtnWrap', this.value); draw(false);">
+              </div>
+              <button id="guideHitbox" style="width:100%;" onclick="toggleGuide('guideHitbox')">히트박스 OFF</button>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button id="snapToggle" class="active" onclick="toggleSnap()" style="flex:1;">자석 ON</button>
+            <button onclick="autoAlign()" style="flex:1;">자동 정렬</button>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <label>글자 크기</label>
+          <input type="range" id="fontSize" min="50" max="800" value="180" oninput="handleInteraction(this, 180, true)">
+        </div>
+
+        <div class="detail-item">
+          <label>그림자</label>
+          <input type="range" id="shadowBlur" min="0" max="100" value="0" oninput="handleInteraction(this, 0, false)">
+        </div>
+
+        <div class="detail-item">
+          <label>배경 이미지 설정</label>
+          <button onclick="document.getElementById('bgImgInput').click()" style="width:100%; margin-bottom:8px;">이미지 불러오기</button>
+          <input type="file" id="bgImgInput" hidden accept="image/*" onchange="handleImage(event)">
+          <label>배율</label>
+          <input type="range" id="imgScale" min="0.1" max="10" step="0.01" value="1" oninput="handleInteraction(this, 1, false)">
+          <label>X 위치</label>
+          <input type="range" id="imgX" min="-2000" max="2000" value="0" oninput="handleInteraction(this, 0, false)">
+          <label>Y 위치</label>
+          <input type="range" id="imgY" min="-2000" max="2000" value="0" oninput="handleInteraction(this, 0, false)">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  let bgImage = null, isBold = true, isItalic = true, showCross = false, showHitbox = false, snapEnabled = true;
+  let zoomLevel = 1, panX = 0, panY = 0, isPanning = false, startX = 0, startY = 0, mouseDownTime = 0, cachedMetrics = null;
+
+  function setTomorrowDate() {
+    const d = new Date(); d.setDate(d.getDate() + 1);
+    const yyyy = d.getFullYear(), mm = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0');
+    document.getElementById('mainText').value = `${yyyy}.${mm}.${dd}.`;
+  }
+
+  function getVisualMetrics(text, fontStyle) {
+    const tCanvas = document.createElement('canvas'); tCanvas.width = 1600; tCanvas.height = 900;
+    const tctx = tCanvas.getContext('2d');
+    tctx.font = fontStyle; tctx.textAlign = 'center'; tctx.textBaseline = 'middle';
+    tctx.fillText(text, 800, 450);
+    const data = tctx.getImageData(0, 0, 1600, 900).data;
+    let minX = 1600, maxX = 0, minY = 900, maxY = 0, hasPixels = false;
+    for (let y = 0; y < 900; y += 4) {
+      for (let x = 0; x < 1600; x += 4) {
+        if (data[(y * 1600 + x) * 4 + 3] > 10) {
+          if (x < minX) minX = x; if (x > maxX) maxX = x;
+          if (y < minY) minY = y; if (y > maxY) maxY = y; hasPixels = true;
+        }
+      }
+    }
+    return hasPixels ? { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2, minX, maxX, minY, maxY } : null;
+  }
+
+  function handleBgColorChange() { bgImage = null; document.getElementById('bgImgInput').value = ''; draw(false); }
+
+  function draw(updateMetrics = true) {
+    const text = document.getElementById('mainText').value;
+    const font = document.getElementById('fontFamily').value;
+    const fontSize = document.getElementById('fontSize').value;
+    const styleStr = `${isItalic ? 'italic' : 'normal'} ${isBold ? '700' : '400'} ${fontSize}px ${font}`;
+    
+    if (updateMetrics || !cachedMetrics) cachedMetrics = getVisualMetrics(text, styleStr);
+    ctx.fillStyle = document.getElementById('bgColor').value;
+    ctx.fillRect(0, 0, 1600, 900);
+    if (bgImage) {
+      const scale = parseFloat(document.getElementById('imgScale').value);
+      const dw = bgImage.width * scale, dh = bgImage.height * scale;
+      const dx = 800 - (dw/2) + parseInt(document.getElementById('imgX').value);
+      const dy = 450 - (dh/2) - parseInt(document.getElementById('imgY').value);
+      ctx.drawImage(bgImage, dx, dy, dw, dh);
+    }
+    let tx = parseInt(document.getElementById('posX').value);
+    let ty = 900 - parseInt(document.getElementById('posY').value);
+    if (cachedMetrics) { tx += (800 - cachedMetrics.cx); ty += (450 - cachedMetrics.cy); }
+    const blur = parseInt(document.getElementById('shadowBlur').value);
+    if (blur > 0) {
+      ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = blur;
+      ctx.shadowOffsetX = blur * 0.4; ctx.shadowOffsetY = blur * 0.4;
+    } else { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; }
+    ctx.fillStyle = document.getElementById('textColor').value;
+    ctx.font = styleStr; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, tx, ty);
+    ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+    
+    if (showCross) {
+      ctx.strokeStyle = document.querySelector('#crossBtnWrap input').value; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(800, 0); ctx.lineTo(800, 900); ctx.moveTo(0, 450); ctx.lineTo(1600, 450); ctx.stroke();
+    }
+    if (showHitbox && cachedMetrics) {
+      ctx.strokeStyle = document.querySelector('#hitboxBtnWrap input').value; ctx.lineWidth = 2;
+      const w = cachedMetrics.maxX - cachedMetrics.minX, h = cachedMetrics.maxY - cachedMetrics.minY;
+      ctx.strokeRect(tx - w/2, ty - h/2, w, h);
+      ctx.beginPath(); ctx.moveTo(tx - w/2, ty); ctx.lineTo(tx + w/2, ty); ctx.moveTo(tx, ty - h/2); ctx.lineTo(tx, ty + h/2); ctx.stroke();
+    }
+  }
+
+  function handleInteraction(el, center, heavy = false) {
+    if (snapEnabled) {
+      const range = el.max - el.min;
+      if (Math.abs(el.value - center) < range * 0.02) el.value = center;
+    }
+    const val = parseFloat(el.value), min = parseFloat(el.min), max = parseFloat(el.max);
+    let pStart = ((center - min) / (max - min)) * 100, pEnd = ((val - min) / (max - min)) * 100;
+    if (Math.abs(pStart - pEnd) < 0.2) el.style.background = `var(--slider-track)`;
+    else {
+      if (pStart > pEnd) [pStart, pEnd] = [pEnd, pStart];
+      el.style.background = `linear-gradient(to right, var(--slider-track) 0%, var(--slider-track) ${pStart}%, #fff ${pStart}%, #fff ${pEnd}%, var(--slider-track) ${pEnd}%, var(--slider-track) 100%)`;
+    }
+    draw(heavy);
+  }
+
+  function toggleStyle(id) {
+    const btn = document.getElementById(id); btn.classList.toggle('active');
+    if (id === 'btnBold') isBold = btn.classList.contains('active');
+    if (id === 'btnItalic') isItalic = btn.classList.contains('active');
+    draw(true); setTimeout(() => draw(true), 45);
+  }
+
+  function toggleGuide(id) {
+    const btn = document.getElementById(id); btn.classList.toggle('active');
+    const isOn = btn.classList.contains('active');
+    if (id === 'guideCross') { showCross = isOn; btn.innerText = `십자선 ${isOn?'ON':'OFF'}`; }
+    else { showHitbox = isOn; btn.innerText = `히트박스 ${isOn?'ON':'OFF'}`; }
+    draw(false);
+  }
+
+  function downloadImage() {
+    const originalCross = showCross; const originalHitbox = showHitbox;
+    showCross = false; showHitbox = false; draw(false);
+    const link = document.createElement('a'); link.download = 'thumbnail.png';
+    link.href = canvas.toDataURL('image/png'); link.click();
+    showCross = originalCross; showHitbox = originalHitbox; draw(false);
+  }
+
+  function toggleDetail() { document.body.classList.toggle('detailed-mode'); }
+  function toggleSnap() { snapEnabled = !snapEnabled; const btn = document.getElementById('snapToggle'); btn.classList.toggle('active'); btn.innerText = `자석 ${snapEnabled?'ON':'OFF'}`; }
+  function autoAlign() { const x = document.getElementById('posX'), y = document.getElementById('posY'); x.value = 800; y.value = 450; handleInteraction(x, 800); handleInteraction(y, 450); }
+  function updateBtnColor(id, color) { document.getElementById(id).style.background = color; draw(false); }
+  function handleImage(e) { const f = e.target.files[0]; if(f){ const r = new FileReader(); r.onload=(ev)=>{bgImage=new Image(); bgImage.onload=()=>draw(false); bgImage.src=ev.target.result;}; r.readAsDataURL(f); } }
+
+  function handleMouseDown(e) { mouseDownTime = Date.now(); if (document.body.classList.contains('zoom-mode')) { isPanning = true; startX = e.clientX - panX; startY = e.clientY - panY; document.addEventListener('mousemove', pan); } }
+  function handleMouseUp() { if (Date.now() - mouseDownTime < 200) toggleZoomMode(); isPanning = false; document.removeEventListener('mousemove', pan); }
+  function toggleZoomMode() {
+    const b = document.body, zr = document.getElementById('zoomRange');
+    if (!b.classList.contains('zoom-mode')) { b.classList.add('zoom-mode'); zoomLevel = 1.15; zr.value = 1.15; }
+    else { b.classList.remove('zoom-mode'); zoomLevel = 1; panX = 0; panY = 0; }
+    updateCanvasTransform();
+  }
+  function pan(e) { if (isPanning) { panX = e.clientX - startX; panY = e.clientY - startY; updateCanvasTransform(); } }
+  function updateCanvasTransform() { canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`; }
+  function applyZoom() { zoomLevel = parseFloat(document.getElementById('zoomRange').value); updateCanvasTransform(); }
+
+  /* [글꼴 변경 시 상호작용 강제 발생 로직] */
+  function refreshFont() {
+    // 굵기 2번 상호작용
+    toggleStyle('btnBold'); toggleStyle('btnBold');
+    // 기울기 2번 상호작용
+    toggleStyle('btnItalic'); toggleStyle('btnItalic');
+    // 히트박스 2번 상호작용
+    toggleGuide('guideHitbox'); toggleGuide('guideHitbox');
+    
+    // 최종 확인 드로우
+    draw(true);
+    setTimeout(() => draw(true), 60);
+  }
+
+  window.onload = () => {
+    setTomorrowDate();
+    [['posX', 800], ['posY', 450], ['fontSize', 180], ['shadowBlur', 0], ['imgScale', 1], ['imgX', 0], ['imgY', 0]].forEach(i => handleInteraction(document.getElementById(i[0]), i[1]));
+    draw(true);
+    setTimeout(() => draw(true), 100);
+  };
+</script>
+</body>
+</html>
