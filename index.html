@@ -645,7 +645,29 @@
 
   function toggleStyle(id) {
     const btn = document.getElementById(id); btn.classList.toggle('active');
-    if (id === 'btnBold') isBold = btn.classList.conta ${snapEnabled?'ON':'OFF'}`; }
+    if (id === 'btnBold') isBold = btn.classList.contains('active');
+    if (id === 'btnItalic') isItalic = btn.classList.contains('active');
+    draw(true);
+  }
+
+  function toggleGuide(id) {
+    const btn = document.getElementById(id); btn.classList.toggle('active');
+    const isOn = btn.classList.contains('active');
+    if (id === 'guideCross') { showCross = isOn; btn.innerText = `십자선 ${isOn?'ON':'OFF'}`; }
+    else { showHitbox = isOn; btn.innerText = `히트박스 ${isOn?'ON':'OFF'}`; }
+    draw(false);
+  }
+
+  function downloadImage() {
+    const originalCross = showCross; const originalHitbox = showHitbox;
+    showCross = false; showHitbox = false; draw(false);
+    const link = document.createElement('a'); link.download = 'thumbnail.png';
+    link.href = canvas.toDataURL('image/png'); link.click();
+    showCross = originalCross; showHitbox = originalHitbox; draw(false);
+  }
+
+  function toggleDetail() { document.body.classList.toggle('detailed-mode'); }
+  function toggleSnap() { snapEnabled = !snapEnabled; const btn = document.getElementById('snapToggle'); btn.classList.toggle('active'); btn.innerText = `스크롤 스냅 ${snapEnabled?'ON':'OFF'}`; }
   function autoAlign() { const x = document.getElementById('posX'), y = document.getElementById('posY'); x.value = 800; y.value = 450; handleInteraction(x, 800); handleInteraction(y, 450); }
   function updateBtnColor(id, color) { document.getElementById(id).style.background = color; draw(false); }
   function handleImage(e) { const f = e.target.files[0]; if(f){ const r = new FileReader(); r.onload=(ev)=>{bgImage=new Image(); bgImage.onload=()=>draw(false); bgImage.src=ev.target.result;}; r.readAsDataURL(f); } }
@@ -667,13 +689,13 @@
     const delay = 20;
     setTimeout(() => { toggleStyle('btnBold'); }, 0);
     setTimeout(() => { toggleStyle('btnBold'); }, delay);
-    
+
     setTimeout(() => { toggleStyle('btnItalic'); }, delay * 2);
     setTimeout(() => { toggleStyle('btnItalic'); }, delay * 3);
-    
+
     setTimeout(() => { toggleGuide('guideHitbox'); }, delay * 4);
     setTimeout(() => { toggleGuide('guideHitbox'); }, delay * 5);
-    
+
     setTimeout(() => { draw(true); }, delay * 6);
   }
 
