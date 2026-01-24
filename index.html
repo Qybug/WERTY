@@ -3,7 +3,7 @@
 <head>
   <base target="_top">
   <meta charset="UTF-8">
-  <title>유튜브 썸네일 생성기 V15.21 - 폰트 동기화 강화판</title>
+  <title>유튜브 썸네일 생성기 V15.23 - 상호작용 최적화판</title>
   <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Gothic+A1:wght@400;700;900&family=Nanum+Brush+Script&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@100;400;700;900&family=Poor+Story&family=Song+Myung&family=Sunflower:wght@300;500;700&family=Jua&family=Gamja+Flower&family=Hi+Melody&family=Kirang+Haerang&family=Single+Day&family=Cute+Font&family=Gaegu&family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;600;700&family=Bagel+Fat+One&family=Dongle:wght@400;700&family=Orbit&family=Black+And+White+Picture&family=Dokdo&family=East+Sea+Dokdo&family=Hahmlet:wght@400;700&family=Yeon+Sung&family=Gugi&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -381,6 +381,19 @@
       font-weight: bold;
     }
 
+    #fontFamily {
+      background:#111; 
+      color:#fff; 
+      border:1px solid #333; 
+      padding:6px; 
+      width:100%;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    #fontFamily::-webkit-scrollbar {
+      display: none;
+    }
+
     .thin-color-bar {
       width: 100%;
       height: 6px;
@@ -405,7 +418,7 @@
 <div id="layout-container">
   <div id="app-wrapper">
     <div class="top-section">
-      <div class="app-title">썸네일 생성기</div>
+      <div class="app-title">스토리 썸네일 생성기</div>
       <div class="control-bar">
         <input type="text" id="mainText" placeholder="텍스트 입력" oninput="draw(true)">
         <div class="top-color-wrap">
@@ -420,7 +433,7 @@
 
     <div class="editor-area">
       <div class="y-axis-container">
-        <span class="y-label-top">높이(Y)</span>
+        <span class="y-label-top">높이 (Y)</span>
         <input type="range" id="posY" class="y-slider-rotated" min="0" max="900" value="450" oninput="handleInteraction(this, 450)">
       </div>
 
@@ -445,7 +458,7 @@
       <div id="detail-panel">
         <div class="detail-item">
           <label>글꼴 및 스타일</label>
-          <select id="fontFamily" onchange="refreshFont()" style="background:#111; color:#fff; border:1px solid #333; padding:6px; width:100%;">
+          <select id="fontFamily" onchange="refreshFont()">
             <option value="'Noto Sans KR'">본고딕</option>
             <option value="'Black Han Sans'">검은고딕</option>
             <option value="'Do Hyeon'">도현체</option>
@@ -511,7 +524,7 @@
         </div>
 
         <div class="detail-item">
-          <label>그림자</label>
+          <label>그림자 농도</label>
           <input type="range" id="shadowBlur" min="0" max="100" value="0" oninput="handleInteraction(this, 0, false)">
         </div>
 
@@ -624,7 +637,7 @@
     const btn = document.getElementById(id); btn.classList.toggle('active');
     if (id === 'btnBold') isBold = btn.classList.contains('active');
     if (id === 'btnItalic') isItalic = btn.classList.contains('active');
-    draw(true); setTimeout(() => draw(true), 45);
+    draw(true);
   }
 
   function toggleGuide(id) {
@@ -661,18 +674,12 @@
   function updateCanvasTransform() { canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`; }
   function applyZoom() { zoomLevel = parseFloat(document.getElementById('zoomRange').value); updateCanvasTransform(); }
 
-  /* [글꼴 변경 시 상호작용 강제 발생 로직] */
+  /* [굵기만 2번 토글하여 시각적 불편함 최소화] */
   function refreshFont() {
-    // 굵기 2번 상호작용
-    toggleStyle('btnBold'); toggleStyle('btnBold');
-    // 기울기 2번 상호작용
-    toggleStyle('btnItalic'); toggleStyle('btnItalic');
-    // 히트박스 2번 상호작용
-    toggleGuide('guideHitbox'); toggleGuide('guideHitbox');
-    
-    // 최종 확인 드로우
-    draw(true);
-    setTimeout(() => draw(true), 60);
+    const delay = 15;
+    setTimeout(() => { toggleStyle('btnBold'); }, 0);
+    setTimeout(() => { toggleStyle('btnBold'); }, delay);
+    setTimeout(() => { draw(true); }, delay * 2);
   }
 
   window.onload = () => {
