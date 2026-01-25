@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-
-  
   <link rel="icon" href="ewr.png">
   <base target="_top">
   <meta charset="UTF-8">
@@ -13,13 +11,12 @@
   <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&family=Luckiest+Guy&display=swap" rel="stylesheet">
   
   <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Gothic+A1:wght@400;700;900&family=Nanum+Brush+Script&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@100;400;700;900&family=Poor+Story&family=Song+Myung&family=Sunflower:wght@300;500;700&family=Jua&family=Gamja+Flower&family=Hi+Melody&family=Kirang+Haerang&family=Single+Day&family=Cute+Font&family=Gaegu&family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;600;700&family=Bagel+Fat+One&family=Dongle:wght@400;700&family=Orbit&family=Black+And+White+Picture&family=Dokdo&family=East+Sea+Dokdo&family=Hahmlet:wght@400;700&family=Yeon+Sung&family=Gugi&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@1,14..32,100..900&display=swap" rel="stylesheet">
 
-  
   <style>
     :root {
       --bg-dark: #050505;
@@ -369,6 +366,12 @@
       -ms-overflow-style: none;
     }
 
+    body.zoom-mode #detail-panel {
+      opacity: 0 !important;
+      pointer-events: none !important;
+      visibility: hidden;
+    }
+
     #detail-panel::-webkit-scrollbar {
       display: none;
     }
@@ -466,7 +469,6 @@
           <label>글꼴 및 스타일</label>
           <select id="fontFamily" onchange="refreshFont()">
             <option value="'Noto Sans KR'">본고딕</option>
-
             <option value="'League Spartan'">League Spartan</option>
             <option value="'Luckiest Guy'">Luckiest Guy</option>
             <option value="'Impact'">Impact </option>
@@ -506,7 +508,7 @@
             <button id="btnBold" onclick="toggleStyle('btnBold')">굵게</button>
             <button id="btnItalic" class="active" onclick="toggleStyle('btnItalic')">기울임</button>
             <div style="display:flex; flex-direction:column; flex:1; align-items:center; gap:2px;">
-              <input type="range" id="weightRange" min="0" max="100" step="0.001" value="0" style="width:100%;" oninput="handleWeightChange(this)">
+              <input type="range" id="weightRange" min="100" max="900" step="100" value="400" style="width:100%;" oninput="handleWeightChange(this)">
               <span style="font-size: 9px; color: var(--text-sub); font-weight: bold;">굵기 조절</span>
             </div>
           </div>
@@ -597,9 +599,9 @@
     const text = document.getElementById('mainText').value;
     const font = document.getElementById('fontFamily').value;
     const fontSize = document.getElementById('fontSize').value;
-    const weightVal = parseFloat(document.getElementById('weightRange').value);
+    const weightVal = document.getElementById('weightRange').value; 
     
-    const styleStr = `${isItalic ? 'italic' : 'normal'} 400 ${fontSize}px ${font}`;
+    const styleStr = `${isItalic ? 'italic' : 'normal'} ${weightVal} ${fontSize}px ${font}`;
     
     if (updateMetrics || !cachedMetrics) cachedMetrics = getVisualMetrics(text, styleStr);
     
@@ -629,15 +631,6 @@
     ctx.fillStyle = textColor;
     ctx.font = styleStr; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     
-    ctx.lineJoin = 'miter'; 
-    ctx.miterLimit = 10;
-    ctx.lineCap = 'butt';
-
-    if (weightVal > 0) {
-      ctx.strokeStyle = textColor;
-      ctx.lineWidth = weightVal / 5;
-      ctx.strokeText(text, tx, ty);
-    }
     ctx.fillText(text, tx, ty);
     
     ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
@@ -670,9 +663,9 @@
   }
 
   function handleWeightChange(el) {
-    handleInteraction(el, 0, false);
+    handleInteraction(el, 400, true);
     const btn = document.getElementById('btnBold');
-    if (parseFloat(el.value) >= 40) {
+    if (parseInt(el.value) >= 700) {
       if (!btn.classList.contains('active')) btn.classList.add('active');
     } else {
       if (btn.classList.contains('active')) btn.classList.remove('active');
@@ -683,7 +676,7 @@
     const btn = document.getElementById(id); btn.classList.toggle('active');
     if (id === 'btnBold') {
       const weightSlider = document.getElementById('weightRange');
-      weightSlider.value = btn.classList.contains('active') ? 50 : 0;
+      weightSlider.value = btn.classList.contains('active') ? 700 : 400;
       handleWeightChange(weightSlider);
     }
     if (id === 'btnItalic') isItalic = btn.classList.contains('active');
@@ -724,7 +717,9 @@
   function updateCanvasTransform() { canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`; }
   function applyZoom() { zoomLevel = parseFloat(document.getElementById('zoomRange').value); updateCanvasTransform(); }
 
+  // 폰트 변경 시 굵기 값을 유지하도록 수정한 함수
   function refreshFont() {
+    const savedWeight = document.getElementById('weightRange').value;
     const delay = 20;
     setTimeout(() => { toggleStyle('btnBold'); }, 0);
     setTimeout(() => { toggleStyle('btnBold'); }, delay);
@@ -732,12 +727,17 @@
     setTimeout(() => { toggleStyle('btnItalic'); }, delay * 3);
     setTimeout(() => { toggleGuide('guideHitbox'); }, delay * 4);
     setTimeout(() => { toggleGuide('guideHitbox'); }, delay * 5);
-    setTimeout(() => { draw(true); }, delay * 6);
+    setTimeout(() => { 
+      const weightSlider = document.getElementById('weightRange');
+      weightSlider.value = savedWeight;
+      handleWeightChange(weightSlider);
+      draw(true); 
+    }, delay * 6);
   }
 
   window.onload = () => {
     setTomorrowDate();
-    [['posX', 800], ['posY', 450], ['weightRange', 0], ['fontSize', 180], ['shadowBlur', 0], ['imgScale', 1], ['imgX', 0], ['imgY', 0]].forEach(i => handleInteraction(document.getElementById(i[0]), i[1]));
+    [['posX', 800], ['posY', 450], ['weightRange', 400], ['fontSize', 180], ['shadowBlur', 0], ['imgScale', 1], ['imgX', 0], ['imgY', 0]].forEach(i => handleInteraction(document.getElementById(i[0]), i[1]));
     draw(true);
     setTimeout(() => draw(true), 100);
   };
