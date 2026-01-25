@@ -1,25 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <link rel="icon" href="ewr.png">
 
   
+  <link rel="icon" href="ewr.png">
   <base target="_top">
   <meta charset="UTF-8">
   <title>스토리 썸네일 생성기</title>
   <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Gothic+A1:wght@400;700;900&family=Nanum+Brush+Script&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@100;400;700;900&family=Poor+Story&family=Song+Myung&family=Sunflower:wght@300;500;700&family=Jua&family=Gamja+Flower&family=Hi+Melody&family=Kirang+Haerang&family=Single+Day&family=Cute+Font&family=Gaegu&family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;600;700&family=Bagel+Fat+One&family=Dongle:wght@400;700&family=Orbit&family=Black+And+White+Picture&family=Dokdo&family=East+Sea+Dokdo&family=Hahmlet:wght@400;700&family=Yeon+Sung&family=Gugi&display=swap" rel="stylesheet">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&family=Luckiest+Guy&family=Black+Han+Sans&family=Do+Hyeon&family=Gothic+A1:wght@400;700;900&family=Nanum+Brush+Script&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@100;400;700;900&family=Poor+Story&family=Song+Myung&family=Sunflower:wght@300;500;700&family=Jua&family=Gamja+Flower&family=Hi+Melody&family=Kirang+Haerang&family=Single+Day&family=Cute+Font&family=Gaegu&family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;600;700&family=Bagel+Fat+One&family=Dongle:wght@400;700&family=Orbit&family=Black+And+White+Picture&family=Dokdo&family=East+Sea+Dokdo&family=Hahmlet:wght@400;700&family=Yeon+Sung&family=Gugi&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
   
-  
   <style>
-
-    
-
-
-    
     :root {
       --bg-dark: #050505;
       --panel-bg: #0d0d0d;
@@ -377,10 +368,6 @@
       pointer-events: all;
     }
 
-    body.zoom-mode #detail-panel {
-      display: none !important;
-    }
-
     .detail-item {
       display: flex;
       flex-direction: column;
@@ -395,18 +382,12 @@
       font-weight: bold;
     }
     
-    /* [글꼴 선택창 하얀 스크롤바 제거] */
     #fontFamily {
       background:#111; 
       color:#fff; 
       border:1px solid #333; 
       padding:6px; 
       width:100%;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-    #fontFamily::-webkit-scrollbar {
-      display: none;
     }
 
     .thin-color-bar {
@@ -509,9 +490,13 @@
             <option value="'Yeon Sung'">연성체</option>
             <option value="'Gugi'">구기체</option>
           </select>
-          <div style="display:flex; gap:8px; margin-top:5px;">
-            <button id="btnBold" class="active" onclick="toggleStyle('btnBold')">굵게</button>
+          <div style="display:flex; gap:8px; margin-top:5px; align-items:flex-start;">
+            <button id="btnBold" onclick="toggleStyle('btnBold')">굵게</button>
             <button id="btnItalic" class="active" onclick="toggleStyle('btnItalic')">기울임</button>
+            <div style="display:flex; flex-direction:column; flex:1; align-items:center; gap:2px;">
+              <input type="range" id="weightRange" min="0" max="100" step="0.001" value="0" style="width:100%;" oninput="handleWeightChange(this)">
+              <span style="font-size: 9px; color: var(--text-sub); font-weight: bold;">굵기 조절</span>
+            </div>
           </div>
         </div>
 
@@ -567,7 +552,7 @@
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
   
-  let bgImage = null, isBold = true, isItalic = true, showCross = false, showHitbox = false, snapEnabled = true;
+  let bgImage = null, isBold = false, isItalic = true, showCross = false, showHitbox = false, snapEnabled = true;
   let zoomLevel = 1, panX = 0, panY = 0, isPanning = false, startX = 0, startY = 0, mouseDownTime = 0, cachedMetrics = null;
 
   function setTomorrowDate() {
@@ -600,11 +585,16 @@
     const text = document.getElementById('mainText').value;
     const font = document.getElementById('fontFamily').value;
     const fontSize = document.getElementById('fontSize').value;
-    const styleStr = `${isItalic ? 'italic' : 'normal'} ${isBold ? '700' : '400'} ${fontSize}px ${font}`;
+    const weightVal = parseFloat(document.getElementById('weightRange').value);
+    
+    const styleStr = `${isItalic ? 'italic' : 'normal'} 400 ${fontSize}px ${font}`;
     
     if (updateMetrics || !cachedMetrics) cachedMetrics = getVisualMetrics(text, styleStr);
-    ctx.fillStyle = document.getElementById('bgColor').value;
+    
+    const bgColor = document.getElementById('bgColor').value;
+    ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, 1600, 900);
+    
     if (bgImage) {
       const scale = parseFloat(document.getElementById('imgScale').value);
       const dw = bgImage.width * scale, dh = bgImage.height * scale;
@@ -612,17 +602,33 @@
       const dy = 450 - (dh/2) - parseInt(document.getElementById('imgY').value);
       ctx.drawImage(bgImage, dx, dy, dw, dh);
     }
+    
     let tx = parseInt(document.getElementById('posX').value);
     let ty = 900 - parseInt(document.getElementById('posY').value);
     if (cachedMetrics) { tx += (800 - cachedMetrics.cx); ty += (450 - cachedMetrics.cy); }
+    
     const blur = parseInt(document.getElementById('shadowBlur').value);
     if (blur > 0) {
       ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = blur;
       ctx.shadowOffsetX = blur * 0.4; ctx.shadowOffsetY = blur * 0.4;
     } else { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; }
-    ctx.fillStyle = document.getElementById('textColor').value;
+    
+    const textColor = document.getElementById('textColor').value;
+    ctx.fillStyle = textColor;
     ctx.font = styleStr; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    
+    // 모서리 각을 살리는 핵심 설정
+    ctx.lineJoin = 'miter'; 
+    ctx.miterLimit = 10;
+    ctx.lineCap = 'butt';
+
+    if (weightVal > 0) {
+      ctx.strokeStyle = textColor;
+      ctx.lineWidth = weightVal / 5;
+      ctx.strokeText(text, tx, ty);
+    }
     ctx.fillText(text, tx, ty);
+    
     ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
     
     if (showCross) {
@@ -644,7 +650,7 @@
     }
     const val = parseFloat(el.value), min = parseFloat(el.min), max = parseFloat(el.max);
     let pStart = ((center - min) / (max - min)) * 100, pEnd = ((val - min) / (max - min)) * 100;
-    if (Math.abs(pStart - pEnd) < 0.2) el.style.background = `var(--slider-track)`;
+    if (Math.abs(pStart - pEnd) < 0.1) el.style.background = `var(--slider-track)`;
     else {
       if (pStart > pEnd) [pStart, pEnd] = [pEnd, pStart];
       el.style.background = `linear-gradient(to right, var(--slider-track) 0%, var(--slider-track) ${pStart}%, #fff ${pStart}%, #fff ${pEnd}%, var(--slider-track) ${pEnd}%, var(--slider-track) 100%)`;
@@ -652,9 +658,23 @@
     draw(heavy);
   }
 
+  function handleWeightChange(el) {
+    handleInteraction(el, 0, false);
+    const btn = document.getElementById('btnBold');
+    if (parseFloat(el.value) >= 40) {
+      if (!btn.classList.contains('active')) btn.classList.add('active');
+    } else {
+      if (btn.classList.contains('active')) btn.classList.remove('active');
+    }
+  }
+
   function toggleStyle(id) {
     const btn = document.getElementById(id); btn.classList.toggle('active');
-    if (id === 'btnBold') isBold = btn.classList.contains('active');
+    if (id === 'btnBold') {
+      const weightSlider = document.getElementById('weightRange');
+      weightSlider.value = btn.classList.contains('active') ? 50 : 0;
+      handleWeightChange(weightSlider);
+    }
     if (id === 'btnItalic') isItalic = btn.classList.contains('active');
     draw(true);
   }
@@ -693,24 +713,20 @@
   function updateCanvasTransform() { canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`; }
   function applyZoom() { zoomLevel = parseFloat(document.getElementById('zoomRange').value); updateCanvasTransform(); }
 
-  /* [순차적 상호작용: 20ms 딜레이를 주어 브라우저 인식 유도] */
   function refreshFont() {
     const delay = 20;
     setTimeout(() => { toggleStyle('btnBold'); }, 0);
     setTimeout(() => { toggleStyle('btnBold'); }, delay);
-
     setTimeout(() => { toggleStyle('btnItalic'); }, delay * 2);
     setTimeout(() => { toggleStyle('btnItalic'); }, delay * 3);
-
     setTimeout(() => { toggleGuide('guideHitbox'); }, delay * 4);
     setTimeout(() => { toggleGuide('guideHitbox'); }, delay * 5);
-
     setTimeout(() => { draw(true); }, delay * 6);
   }
 
   window.onload = () => {
     setTomorrowDate();
-    [['posX', 800], ['posY', 450], ['fontSize', 180], ['shadowBlur', 0], ['imgScale', 1], ['imgX', 0], ['imgY', 0]].forEach(i => handleInteraction(document.getElementById(i[0]), i[1]));
+    [['posX', 800], ['posY', 450], ['weightRange', 0], ['fontSize', 180], ['shadowBlur', 0], ['imgScale', 1], ['imgX', 0], ['imgY', 0]].forEach(i => handleInteraction(document.getElementById(i[0]), i[1]));
     draw(true);
     setTimeout(() => draw(true), 100);
   };
