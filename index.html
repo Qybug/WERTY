@@ -1583,7 +1583,7 @@
     // 폰트 변경 시 브라우저가 렌더링을 제대로 못하는 경우를 대비해 스타일을 잠시 토글합니다.
     function refreshFont() {
         const savedWeight = document.getElementById('weightRange').value;
-        const delay = 30;
+        const delay = 10;
         
         setTimeout(() => { toggleStyle('btnBold'); }, 0);
         setTimeout(() => { toggleStyle('btnBold'); }, delay);
