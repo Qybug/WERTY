@@ -1582,28 +1582,25 @@
     // [폰트 새로고침 함수]
     // 폰트 변경 시 브라우저가 렌더링을 제대로 못하는 경우를 대비해 스타일을 잠시 토글합니다.
     function refreshFont() {
-        const savedWeight = document.getElementById('weightRange').value;
-        const delay = 1;
-        
-        setTimeout(() => { toggleStyle('btnBold'); }, 0);
-        setTimeout(() => { toggleStyle('btnBold'); }, delay);
-        setTimeout(() => { toggleGuide('guideHitbox'); }, 0);
-        setTimeout(() => { toggleGuide('guideHitbox'); }, delay);
-        setTimeout(() => { toggleStyle('btnItalic'); }, 0);
-        setTimeout(() => { toggleStyle('btnItalic'); }, delay);
-        
-        setTimeout(() => { toggleStyle('btnGlow'); }, 0);
-        setTimeout(() => { toggleStyle('btnGlow'); }, delay);
-        setTimeout(() => { toggleGuide('guideCross'); }, 0);
-        setTimeout(() => { toggleGuide('guideCross'); }, delay);
+        const mainTextEl = document.getElementById('mainText');
+        const savedText = mainTextEl.value; // 현재 텍스트 저장
 
-        setTimeout(() => { 
-            const weightSlider = document.getElementById('weightRange');
-            weightSlider.value = savedWeight;
-            handleWeightChange(weightSlider);
-            draw(true); 
-        }, delay * 2);
+    // 텍스트 지우기
+        mainTextEl.value = '';
+        draw(true); // 캔버스도 바로 반영
+
+    // 1초 뒤에 다시 넣기
+        setTimeout(() => {
+            mainTextEl.value = savedText;
+
+        // 강제로 input 이벤트 발생
+            const event = new Event('input', { bubbles: true });
+            mainTextEl.dispatchEvent(event);
+
+            draw(true); // 캔버스 다시 업데이트
+        }, 40); // 1000ms = 1초
     }
+
 
     // [윈도우 로드 이벤트]
     // 초기화 작업을 수행합니다.
