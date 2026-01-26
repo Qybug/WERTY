@@ -1,746 +1,1638 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-  <link rel="icon" href="ewr.png">
-  <base target="_top">
-  <meta charset="UTF-8">
-  <title>스토리 썸네일 생성기</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>스토리 썸네일 생성기</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&family=Luckiest+Guy&display=swap" rel="stylesheet">
-  
-  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Gothic+A1:wght@400;700;900&family=Nanum+Brush+Script&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@100;400;700;900&family=Poor+Story&family=Song+Myung&family=Sunflower:wght@300;500;700&family=Jua&family=Gamja+Flower&family=Hi+Melody&family=Kirang+Haerang&family=Single+Day&family=Cute+Font&family=Gaegu&family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;600;700&family=Bagel+Fat+One&family=Dongle:wght@400;700&family=Orbit&family=Black+And+White+Picture&family=Dokdo&family=East+Sea+Dokdo&family=Hahmlet:wght@400;700&family=Yeon+Sung&family=Gugi&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="icon" href="ewr.png">
+<base target="_top">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@1,14..32,100..900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&family=Luckiest+Guy&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Gothic+A1:wght@400;700;900&family=Nanum+Brush+Script&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@100;400;700;900&family=Poor+Story&family=Song+Myung&family=Sunflower:wght@300;500;700&family=Jua&family=Gamja+Flower&family=Hi+Melody&family=Kirang+Haerang&family=Single+Day&family=Cute+Font&family=Gaegu&family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;600;700&family=Bagel+Fat+One&family=Dongle:wght@400;700&family=Orbit&family=Black+And+White+Picture&family=Dokdo&family=East+Sea+Dokdo&family=Hahmlet:wght@400;700&family=Yeon+Sung&family=Gugi&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@1,14..32,100..900&display=swap" rel="stylesheet">
 
-  <style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+
+<style>
+    /* [CSS 변수 정의]
+        애플리케이션 전반에서 재사용될 색상 값을 정의합니다.
+        유지보수의 편의성을 위해 변수를 사용합니다.
+    */
     :root {
-      --bg-dark: #050505;
-      --panel-bg: #0d0d0d;
-      --slider-track: #1a1a1a;
-      --accent-color: #ffffff;
-      --text-main: #ffffff;
-      --text-sub: #888888;
+        --bg-dark: #050505;
+        --panel-bg: #0d0d0d;
+        --slider-track: #2a2a2a;
+        --accent-color: #ffffff;
+        --text-main: #ffffff;
+        --text-sub: #888888;
+        --border-color: #222222;
+        --input-bg: #111111;
+        --hover-bg: #222222;
     }
 
+    /* [기본 문서 스타일]
+        body 요소에 대한 기본 설정을 초기화하고 Flexbox 레이아웃을 적용합니다.
+        스크롤을 방지하고 화면 중앙에 콘텐츠를 배치합니다.
+    */
     body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      font-family: 'Noto Sans KR', sans-serif;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      overflow: hidden;
-      user-select: none;
+        background-color: var(--bg-dark);
+        color: var(--text-main);
+        font-family: 'Noto Sans KR', sans-serif;
+        margin-top: 0;
+        margin-bottom: 0;
+        margin-left: 0;
+        margin-right: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        overflow-x: hidden;
+        overflow-y: hidden;
+        user-select: none;
+        -webkit-user-select: none;
     }
 
+    /* [레이아웃 컨테이너]
+        전체 애플리케이션의 래퍼 역할을 합니다.
+        상세 모드 진입 시 왼쪽으로 이동하는 애니메이션을 담당합니다.
+    */
     #layout-container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100vh;
+        transition-property: transform;
+        transition-duration: 0.4s;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     }
 
+    /* [상세 설정 모드 레이아웃 변형]
+        상세 설정 패널이 열릴 때 메인 컨테이너를 왼쪽으로 이동시킵니다.
+        줌 모드일 때는 이동하지 않습니다.
+    */
     body.detailed-mode:not(.zoom-mode) #layout-container {
-      transform: translateX(-160px);
+        transform: translateX(-160px);
     }
 
+    /* [줌 모드 레이아웃 변형]
+        줌 모드에서는 모든 변형을 초기화하고 중앙 정렬을 유지합니다.
+    */
+    body.zoom-mode #layout-container {
+        transform: none !important;
+        justify-content: center;
+    }
+
+    /* [앱 래퍼]
+        상단 컨트롤 바와 에디터 영역을 감싸는 컨테이너입니다.
+        수직 정렬을 수행합니다.
+    */
     #app-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        width: auto;
     }
 
+    /* [상단 섹션 스타일]
+        컨트롤 바를 포함하는 영역입니다.
+        줌 모드 시 사라지는 효과를 가집니다.
+    */
     .top-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 25px;
-      width: 880px;
-      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+        width: 1100px;
+        transition-property: opacity, visibility;
+        transition-duration: 0.3s;
+        transition-timing-function: ease;
     }
 
+    /* [줌 모드 상단 섹션 숨김]
+        줌 모드에서는 상단 컨트롤 UI를 화면에서 제거합니다.
+    */
     body.zoom-mode .top-section {
-      opacity: 0;
-      transform: translateY(-20px);
-      pointer-events: none;
-      visibility: hidden;
+        display: none !important;
     }
 
-    .app-title {
-      font-size: 24px;
-      font-weight: 900;
-      font-style: italic;
-      color: #ddd;
-      letter-spacing: -1px;
-    }
-
+    /* [컨트롤 바 스타일]
+        사용자 입력을 받는 각종 컨트롤러들이 배치되는 메인 바입니다.
+        요청하신 정렬 규칙에 따라 아이템들을 배치합니다.
+    */
     .control-bar {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
+        display: flex;
+        flex-direction: row;
+        gap: 15px;
+        align-items: flex-end;                  /* 기본적으로 하단 정렬을 하되, 내부 그룹에서 위치를 미세 조정합니다 */
+             
+        justify-content: center;
+        width: 100%;
+        background-color: transparent;
+        padding-top: 10px;
+        padding-bottom: 15px; /* 하단 여백을 조금 더 주어 안정감을 줍니다 */
+        padding-left: 20px;
+        padding-right: 20px;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+        border-width: 1px;
+        border-style: solid;
+        border-color: transparent;
+        box-sizing: border-box;
     }
 
-    #mainText {
-      background: #111;
-      border: 1px solid #444;
-      color: white;
-      padding: 8px 15px;
-      width: 280px;
-      border-radius: 4px;
-      outline: none;
-      font-size: 14px;
-      text-align: center;
+    /* [컨트롤 그룹 스타일]
+        좌우측의 슬라이더와 색상 버튼을 묶는 그룹입니다.
+        중앙의 텍스트 입력창과 높이를 맞추기 위해 마진을 조정합니다.
+    */
+    .control-group {
+
+        display: flex;
+
+        flex-direction: column;
+        
+        align-items: center;
+        gap: 2px;
+        /* 중앙 입력창(36px)과 색상버튼(24px)의 센터를 맞추기 위한 미세 조정 */
+        /* 슬라이더가 위아래에 있으므로 전체적인 밸런스를 잡습니다 */
+        margin-bottom: -10px; 
     }
 
+    /* [중앙 그룹 스타일]
+        제목과 메인 텍스트 입력창을 포함하는 그룹입니다.
+    */
+    .center-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+
+    }
+
+    /* [앱 타이틀 스타일]
+        요청하신 대로 입력창과 거리를 벌리고, 색상을 아주 조금 더 어둡게 변경했습니다.
+    */
+    .app-title {
+        font-size: 22px;
+        font-weight: 900;
+        font-style: italic;
+        /* 색상을 #ddd에서 #cccccc로 아주 조금 더 어둡게 변경 */
+        color: #cccccc; 
+        letter-spacing: -0.5px;
+        margin-top: 0;
+        /* 입력창과의 거리를 벌리기 위해 마진을 늘림 */
+        margin-bottom: 12px; 
+    }
+
+    /* [색상 선택 행 스타일]
+        두 개의 색상 선택기를 가로로 배치합니다.
+    */
+    .color-row {
+        display: flex;
+        flex-direction: row;
+        gap: 1px;
+        align-items: center;
+        margin-left: 20px; 
+    }
+
+    /* 오른쪽 그룹의 버튼 줄만 따로 관리 */
+    .right-group .color-row {
+        /* 1. 버튼 사이의 간격을 0으로 (필요하면 더 줄임) */
+        gap: 1px; 
+
+        /* 2. 중앙 정렬을 버리고 왼쪽으로 밀기 (슬라이더와 줄 맞춤) */
+        justify-content: flex-start; 
+
+        /* 3. 미세 조정 (슬라이더 시작점과 눈대중으로 맞추기) */
+        margin-left: -60px; 
+    }
+
+    /* [상단 색상 래퍼 스타일]
+        요청하신 대로 높이를 납작하게(24px) 줄여서 다운로드 버튼과 높이를 맞췄습니다.
+    */
     .top-color-wrap {
-      width: 40px;
-      height: 30px;
-      border: 1px solid #555;
-      border-radius: 4px;
-      overflow: hidden;
-      position: relative;
+        width: 68px;
+        /* 높이를 26px에서 24px로 변경하여 납작하게 만듦 */
+        height: 20px; 
+        top: 0px;
+        left: 10px;
+
+        border-width: 1px;
+        border-style: solid;
+        border-color: #555;
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+        flex-shrink: 0;
+        background-color: #000;
+
     }
 
-    .top-color-wrap input {
-      position: absolute;
-      top: -5px;
-      left: -5px;
-      width: 60px;
-      height: 45px;
-      border: none;
-      cursor: pointer;
+    /* [색상 인풋 스타일]
+        실제 color input 요소는 숨기고 래퍼를 통해 보여줍니다.
+    */
+    .top-color-wrap input[type="color"] {
+        position: absolute;
+        top: -5px;
+        left: -10px;
+        width: 90px;
+        height: 40px;
+        border: none;
+
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+        opacity: 1; 
     }
 
-    button {
-      background: #111;
-      border: 1px solid #444;
-      color: #ddd;
-      padding: 7px 12px;
-      cursor: pointer;
-      border-radius: 3px;
-      font-size: 11px;
-      transition: background 0.2s, color 0.2s;
+    /* [메인 텍스트 입력창 스타일]
+        가장 중요한 입력 요소입니다. 이 요소의 수직 위치가 정렬의 기준이 됩니다.
+    */
+    #mainText {
+        background-color: #111;
+        border-width: 1px;
+        border-style: solid;
+        border-color: #444;
+        color: white;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        padding-left: 15px;
+        padding-right: 15px;
+        width: 300px;
+        height: 36px;
+        border-radius: 4px;
+        outline: none;
+        font-size: 15px;
+        text-align: center;
+        box-sizing: border-box;
+        font-family: inherit;
     }
 
-    button:hover {
-      background: #222;
-    }
-
-    button.active {
-      background: #ddd;
-      color: #000;
-      font-weight: bold;
-      border-color: #fff;
-    }
-
-    .editor-area {
-      display: flex;
-      align-items: flex-start;
-      gap: 15px;
-      position: relative;
-    }
-
-    .y-axis-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      height: 495px;
-      position: relative;
-      width: 50px;
-      transition: height 0.3s;
-    }
-
-    body.zoom-mode .y-axis-container {
-      height: 569px;
-    }
-
-    .y-label-top {
-      position: absolute;
-      top: -35px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 11px;
-      color: var(--text-sub);
-      font-weight: bold;
-      white-space: nowrap;
-    }
-
+    /* [슬라이더 스타일 (Webkit)]
+        기본적인 슬라이더의 모양을 제거하고 커스텀 스타일을 적용합니다.
+    */
     input[type=range] {
-      -webkit-appearance: none;
-      appearance: none;
-      background: var(--slider-track);
-      outline: none;
-      border-radius: 1px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: var(--slider-track);
+        outline: none;
+        border-radius: 2px;
+        height: 2px !important;
+        cursor: pointer;
+        margin: 0;
     }
 
-    input[type=range]::-webkit-slider-runnable-track {
-      background: transparent;
-      height: 2px;
-    }
-
+    /* [슬라이더 썸(핸들) 스타일]
+        사용자가 드래그하는 핸들의 모양을 정의합니다.
+    */
     input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 12px;
-      height: 12px;
-      background: white;
-      border-radius: 50%;
-      cursor: pointer;
-      border: 1px solid #000;
-      margin-top: -5px;
+        -webkit-appearance: none;
+        appearance: none;
+
+        width: 10px;
+        height: 10px;
+        background-color: #ddd;
+        border-radius: 50%;
+        cursor: pointer;
+        border-width: 1px;
+        border-style: solid;
+        border-color: #000;
+        margin-top: 0px; 
+        transition: transform 0.1s;
     }
 
-    .y-slider-rotated {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 495px !important;
-      height: 2px !important;
-      transform: translate(-50%, -50%) rotate(270deg);
-      margin: 0;
-      cursor: pointer;
-      transition: width 0.3s;
+    /* [슬라이더 썸 호버 효과]
+        마우스를 올렸을 때 핸들이 커지는 효과를 줍니다.
+    */
+    input[type=range]:hover::-webkit-slider-thumb {
+        transform: scale(1.2);
+        background-color: #fff;
     }
 
-    body.zoom-mode .y-slider-rotated {
-      width: 569px !important;
+    /* [컨트롤 슬라이더 공통 클래스]
+        상단 컨트롤 바에 있는 슬라이더들의 너비를 정의합니다.
+    */
+    .control-slider {
+        width: 140px;
+        
+        margin-top: 4px;
+        margin-bottom: 4px;
     }
 
-    .center-column {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+    /* [슬라이더 행 스타일]
+        라벨과 슬라이더를 가로로 배치합니다.
+    */
+    .slider-row {
+        display: flex;
 
-    .preview-container {
-      position: relative;
-      border: 1px solid #aaa;
-      line-height: 0;
-      background: #000;
-      width: 880px;
-      height: 495px;
-      overflow: hidden;
-      box-sizing: content-box;
-      z-index: 10;
-      transition: width 0.3s, height 0.3s;
-    }
-
-    body.zoom-mode .preview-container {
-      width: 1012px;
-      height: 569px;
-    }
-
-    canvas {
-      width: 100%;
-      height: 100%;
-      transform-origin: center;
-      transition: transform 0.1s linear;
-    }
-
-    .x-slider-wrap {
-      margin-top: 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-      width: 880px;
-      transition: width 0.3s;
-    }
-
-    body.zoom-mode .x-slider-wrap {
-      width: 1012px;
-    }
-
-    .x-label-bottom {
-      font-size: 11px;
-      color: var(--text-sub);
-      font-weight: bold;
-    }
-
-    .x-slider-bar {
-      width: 100% !important;
-      height: 2px !important;
-    }
-
-    #zoom-v-container {
-      display: none;
-      width: 24px;
-      height: 569px;
-      position: relative;
-      margin-left: 15px;
-    }
-
-    body.zoom-mode #zoom-v-container {
-      display: block;
-    }
-
-    .pyramid-visual-track {
-      position: absolute;
-      width: 24px;
-      height: 569px;
-      background: #222;
-      clip-path: polygon(45% 0%, 55% 0%, 100% 100%, 0% 100%);
-      border-radius: 12px; 
-      z-index: 1;
-      left: 0;
-    }
-
-    .wedge-zoom-v {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 569px !important;
-      height: 24px !important;
-      background: transparent !important;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) rotate(270deg);
-      cursor: pointer;
-      z-index: 5;
-      margin: 0;
-    }
-
-    .wedge-zoom-v::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 20px;
-      height: 20px;
-      background: #fff;
-      border: 3px solid #000;
-      border-radius: 50%;
-      cursor: pointer;
-    }
-
-    .detail-toggle-btn {
-      position: absolute;
-      right: 0;
-      top: -30px;
-      background: #222;
-      border: 1px solid #444;
-      color: #ccc;
-      padding: 4px 10px;
-      cursor: pointer;
-      border-radius: 3px;
-      font-size: 11px;
-      z-index: 20;
-      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
-    }
-
-    body.zoom-mode .detail-toggle-btn {
-      opacity: 0;
-      transform: translateY(-10px);
-      pointer-events: none;
-      visibility: hidden;
-    }
-
-    #detail-panel {
-      position: absolute;
-      left: 100%;
-      top: 0;
-      margin-left: 15px;
-      width: 310px;
-      height: 495px;
-      background: var(--panel-bg);
-      border: 1px solid #333;
-      padding: 18px;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.4s;
-      overflow-y: auto;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-
-    body.zoom-mode #detail-panel {
-      opacity: 0 !important;
-      pointer-events: none !important;
-      visibility: hidden;
-    }
-
-    #detail-panel::-webkit-scrollbar {
-      display: none;
-    }
-
-    .detailed-mode #detail-panel {
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    .detail-item {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      font-size: 11px;
-      border-bottom: 1px solid #222;
-      padding-bottom: 12px;
-    }
-
-    .detail-item label {
-      color: var(--text-sub);
-      font-weight: bold;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
     }
     
+    /* [미니 라벨 스타일]
+        슬라이더 옆에 붙는 작은 텍스트 라벨입니다.
+    */
+    .label-mini {
+        font-size: 10px;
+        color: #777;
+        width: 30px;
+        text-align: right;
+        display: inline-block;
+    }
+
+    /* [버튼 공통 스타일]
+        애플리케이션 내의 모든 버튼에 적용되는 기본 스타일입니다.
+    */
+    button {
+        background-color: #111;
+        border-width: 1px;
+        border-style: solid;
+        border-color: #444;
+        color: #ddd;
+        padding-left: 15px;
+        padding-right: 15px;
+        height: 30px;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 12px;
+        font-family: inherit;
+        transition-property: background-color, color, border-color;
+        transition-duration: 0.2s;
+        transition-timing-function: ease;
+    }
+
+    /* [버튼 호버 효과]
+    */
+    button:hover {
+        background-color: #222;
+    }
+
+    /* [활성화된 버튼 스타일]
+        토글 버튼이 켜져 있을 때의 스타일입니다.
+    */
+    button.active {
+        background-color: #ddd;
+        color: #000;
+        font-weight: bold;
+        border-color: #fff;
+    }
+
+    /* [납작한 버튼 스타일]
+        상세 설정 패널 등에서 사용되는 높이가 낮은 버튼입니다.
+    */
+    .flat-btn {
+        padding-top: 3px;
+        padding-bottom: 3px;
+        padding-left: 10px;
+        padding-right: 10px;
+        height: 24px;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+    }
+
+    /* [다운로드 버튼 스타일 수정]
+        인라인 스타일 대신 클래스로 관리하거나 특정 ID로 제어합니다.
+        가로 배치를 위해 여기서 높이와 마진을 조정합니다.
+    */
+    #btnDownload {
+        height: 24px; /* 납작하게 */
+        padding-left: 10px;
+        padding-right: 10px;
+        /* 입력창과 줄을 맞추기 위한 마진 조정. 입력창 하단과 맞추기 위해 */
+        margin-bottom: 6px; 
+        font-size: 11px;
+        align-self: flex-end; /* 컨트롤바가 flex-end 정렬이므로 */
+    }
+
+    /* [윤곽선 버튼 래퍼 스타일]
+        색상 선택기와 버튼을 하나로 묶는 컨테이너입니다.
+    */
+    .outline-btn-wrap {
+        display: flex;
+        flex-direction: row;
+        height: 24px;
+        border-width: 1px;
+        border-style: solid;
+        border-color: #444;
+        border-radius: 3px;
+        overflow: hidden;
+        background-color: #000;
+    }
+
+    /* [윤곽선 색상 선택기 스타일]
+        요청하신 대로 오른쪽에 테두리를 추가하여 구분감을 줍니다.
+    */
+    .outline-picker {
+        width: 20px;
+        height: 100%;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        background-color: #000;
+        /* 오른쪽 테두리 추가: 버튼과 명확히 구분 */
+        border-right-width: 1px;
+        border-right-style: solid;
+        border-right-color: #555; 
+    }
+
+    /* [웹킷 전용 색상 스와치 스타일 제거]
+    */
+    .outline-picker::-webkit-color-swatch-wrapper { padding: 0; }
+    .outline-picker::-webkit-color-swatch { border: none; }
+
+    /* [윤곽선 토글 버튼 스타일]
+        색상 선택기 바로 옆에 붙는 버튼입니다.
+    */
+    #btnOutline {
+        border: none;
+        border-radius: 0;
+        flex: 1;
+        font-size: 10px;
+        padding-left: 5px;
+        padding-right: 5px;
+        height: 100%;
+        background-color: transparent;
+        color: #ddd;
+    }
+    
+    /* [윤곽선 버튼 활성화 시 스타일]
+        배경색이 바뀌므로 글자색도 조정합니다.
+    */
+    #btnOutline.active {
+        background-color: #ddd;
+        color: #000;
+    }
+
+    /* [에디터 영역 레이아웃]
+        미리보기 캔버스와 축 조절 슬라이더를 포함하는 메인 영역입니다.
+    */
+    .editor-area {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 1px;
+        position: relative;
+    }
+
+    /* [Y축 컨테이너]
+        세로 슬라이더를 포함하는 영역입니다.
+    */
+    .y-axis-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 495px;
+        position: relative;
+        width: 30px;
+        transition-property: height;
+        transition-duration: 0.3s;
+    }
+
+    /* [줌 모드 시 Y축 컨테이너 높이 변경]
+    */
+    body.zoom-mode .y-axis-container {
+        height: 569px;
+    }
+
+    /* [Y축 라벨 스타일]
+        요청하신 대로 색상을 통일(#777777)했습니다.
+    */
+    .y-label-top {
+        position: absolute;
+        top: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 10px;
+        color: #777777; /* 색상 통일 */
+        font-weight: bold;
+        white-space: nowrap;
+    }
+
+    /* [회전된 Y축 슬라이더]
+        세로 방향 조작을 위해 CSS transform으로 회전시켰습니다.
+    */
+    .y-slider-rotated {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 495px !important;
+        height: 2px !important;
+        transform: translate(-50%, -50%) rotate(270deg);
+        margin: 0;
+        cursor: pointer;
+        transition-property: width;
+        transition-duration: 0.3s;
+    }
+
+    /* [줌 모드 시 Y축 슬라이더 길이 변경]
+    */
+    body.zoom-mode .y-slider-rotated {
+        width: 569px !important;
+    }
+
+    /* [중앙 컬럼]
+        캔버스와 X축 슬라이더를 수직으로 배치합니다.
+    */
+    .center-column {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* [미리보기 컨테이너]
+        캔버스를 감싸는 박스입니다. 줌인/아웃 시 크기가 변합니다.
+        요청하신 대로 트랜지션을 부드럽게 조정했습니다.
+    */
+    .preview-container {
+        position: relative;
+        border-width: 1px;
+        border-style: solid;
+        border-color: #333;
+        line-height: 0;
+        background-color: #000;
+        width: 880px;
+        height: 495px;
+        overflow: hidden;
+        box-sizing: content-box;
+        z-index: 10;
+        /* 줌 애니메이션을 자연스럽게 만들기 위한 베지에 곡선 적용 */
+        transition-property: width, height, border-color;
+        transition-duration: 0.35s; 
+        transition-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    /* [줌 모드 시 미리보기 컨테이너 크기 변경]
+    */
+    body.zoom-mode .preview-container {
+        width: 1012px;
+        height: 569px;
+        border-color: #555;
+    }
+
+    /* [캔버스 스타일]
+        실제 그림이 그려지는 영역입니다.
+        부드러운 확대를 위해 트랜지션을 정교하게 설정했습니다.
+    */
+    canvas {
+        width: 100%;
+        height: 100%;
+        transform-origin: center center;
+        /* 기계적인 움직임을 없애고 부드러운 줌 효과 적용 */
+        transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+        will-change: transform; /* 성능 최적화 힌트 */
+    }
+
+    /* [X축 슬라이더 래퍼]
+    */
+    .x-slider-wrap {
+        margin-top: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        width: 880px; 
+    }
+    
+    /* [X축 슬라이더 바 스타일]
+    */
+    .x-slider-bar {
+        width: 100% !important;
+        height: 2px !important;
+        cursor: pointer;
+    }
+
+    /* [X축 라벨 스타일]
+        Y축 라벨과 색상을 통일했습니다.
+    */
+    .x-label-bottom {
+        font-size: 10px;
+        color: #777777; /* 색상 통일 */
+    }
+
+    /* [줌 레버 컨테이너]
+        피라미드 형태의 줌 조절바를 포함합니다.
+    */
+    #zoom-v-container {
+        display: none;
+        width: 20px;
+        height: 569px;
+        position: relative;
+        margin-left: 10px;
+    }
+
+    /* [줌 모드 시 줌 레버 표시]
+    */
+    body.zoom-mode #zoom-v-container {
+        display: block;
+    }
+
+    /* [피라미드 비주얼 트랙]
+        줌 레벨을 시각적으로 보여주는 삼각형 배경입니다.
+    */
+    .pyramid-visual-track {
+        position: absolute;
+        width: 20px;
+        height: 569px;
+        background-color: #151515;
+        clip-path: polygon(45% 0%, 55% 0%, 100% 100%, 0% 100%);
+        border-radius: 10px; 
+        z-index: 1;
+        left: 0;
+    }
+
+    /* [줌 슬라이더 (Wedge)]
+        실제 조작 가능한 투명 슬라이더입니다.
+    */
+    .wedge-zoom-v {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 569px !important;
+        height: 20px !important;
+        background: transparent !important;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(270deg);
+        cursor: pointer;
+        z-index: 5;
+        margin: 0;
+    }
+
+    /* [줌 슬라이더 썸]
+    */
+    .wedge-zoom-v::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 16px;
+        height: 16px;
+        background-color: #fff;
+        border-width: 2px;
+        border-style: solid;
+        border-color: #000;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    /* [상세 설정 토글 버튼]
+        우측 상단에 위치하여 패널을 여닫습니다.
+    */
+    .detail-toggle-btn {
+        position: absolute;
+        right: 0;
+        top: -24px; 
+        background-color: #111;
+        border-width: 1px;
+        border-style: solid;
+        border-color: #333;
+        color: #999;
+        padding-left: 8px;
+        padding-right: 8px;
+        height: 22px;
+        line-height: 20px;
+        cursor: pointer;
+        border-radius: 3px;
+        font-size: 10px;
+        z-index: 20;
+        transition: opacity 0.3s ease;
+    }
+
+    /* [줌 모드 시 토글 버튼 숨김]
+    */
+    body.zoom-mode .detail-toggle-btn {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* [상세 설정 패널]
+        오른쪽에서 슬라이딩되어 나오는 패널입니다.
+    */
+    #detail-panel {
+        position: absolute;
+        left: 100%;
+        top: 0;
+        margin-left: 15px;
+        width: 300px;
+        height: 495px;
+        background-color: var(--panel-bg);
+        border-width: 1px;
+        border-style: solid;
+        border-color: #333;
+        padding: 15px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s;
+        overflow-y: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    
+    
+    }
+
+    /* [줌 모드 시 패널 숨김]
+    */
+    body.zoom-mode #detail-panel {
+        display: none;
+    }
+
+    /* [스크롤바 숨김 (Webkit)]
+    */
+    #detail-panel::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* [상세 모드 활성화 시 패널 표시]
+    */
+    .detailed-mode #detail-panel {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    /* [상세 설정 아이템]
+        각 섹션을 구분하는 컨테이너입니다.
+    */
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        font-size: 11px;
+        border-bottom-width: 1px;
+        border-bottom-style: solid;
+        border-bottom-color: #1a1a1a;
+        padding-bottom: 10px;
+    }
+
+    /* [상세 설정 라벨]
+    */
+    .detail-item label {
+        color: var(--text-sub);
+        font-weight: bold;
+    }
+    
+    /* [폰트 선택 셀렉트 박스]
+    */
     #fontFamily {
-      background:#111; 
-      color:#fff; 
-      border:1px solid #333; 
-      padding:6px; 
-      width:100%;
+        background-color: #111; 
+        color: #fff; 
+        border-width: 1px;
+        border-style: solid;
+        border-color: #333; 
+        padding: 5px; 
+        width: 100%;
+        font-size: 11px;
+        scrollbar-width: none;
     }
+    #fontFamily::-webkit-scrollbar { display: none; }
 
+    /* [얇은 컬러 바]
+        가이드 컨트롤 버튼 위의 색상 표시줄입니다.
+    */
     .thin-color-bar {
-      width: 100%;
-      height: 6px;
-      border-radius: 3px 3px 0 0;
-      border: 1px solid #444;
-      position: relative;
+        width: 100%;
+        height: 6px;
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+        border-width: 1px;
+        border-style: solid;
+        border-color: #444;
+        position: relative;
     }
 
+    /* [컬러 바 내부 인풋]
+    */
     .thin-color-bar input {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      cursor: pointer;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
     }
-  </style>
+
+    /* [컴팩트 슬라이더 래퍼]
+        상세 패널 내부의 작은 슬라이더들을 위한 레이아웃입니다.
+    */
+    .slider-compact-wrap {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 5px;
+        width: 100%;
+    }
+    .slider-compact-wrap input[type=range] {
+        flex: 1;
+    }
+    .slider-compact-wrap span {
+        font-size: 9px;
+        color: #666;
+        width: 25px;
+    }
+
+
+    .right-group .slider-row {
+        flex-direction: row-reverse;
+    }
+
+    .right-group .label-mini {
+        text-align: right;
+    }
+} 
+
+
+</style>
 </head>
 <body id="body">
 
 <div id="layout-container">
-  <div id="app-wrapper">
-    <div class="top-section">
-      <div class="app-title">스토리 썸네일 생성기</div>
-      <div class="control-bar">
-        <input type="text" id="mainText" placeholder="텍스트 입력" oninput="draw(true)">
-        <div class="top-color-wrap">
-          <input type="color" id="bgColor" value="#000000" oninput="handleBgColorChange()">
+    <div id="app-wrapper">
+        
+        <div class="top-section">
+            <div class="control-bar">
+                
+                <div class="control-group">
+                    <div class="slider-row">
+                        <span class="label-mini">방향</span>
+                        <input type="range" id="bgAngle" class="control-slider" min="0" max="360" step="0.1" value="240" oninput="handleInteraction(this, 240)">
+                    </div>
+                    <div class="color-row">
+                        <div class="top-color-wrap">
+                            <input type="color" id="bgColor1" value="#000000" oninput="resetBgImg(); draw(false)">
+                        </div>
+                        <div class="top-color-wrap">
+                            <input type="color" id="bgColor2" value="#1a1a1a" oninput="resetBgImg(); draw(false)">
+                        </div>
+                    </div>
+                    <div class="slider-row">
+                        <span class="label-mini">비율</span>
+                        <input type="range" id="bgRatio" class="control-slider" min="0" max="100" step="-0.1" value="50" oninput="handleInteraction(this, 50)">
+                    </div>
+                </div>
+
+                <div class="center-group">
+                    <div class="app-title">스토리 썸네일 생성기</div>
+                    <input type="text" id="mainText" placeholder="텍스트 입력" oninput="draw(true)">
+                </div>
+
+                <div class="control-group right-group">
+                    <div class="slider-row">
+                        <span class="label-mini">방향</span>
+                        <input type="range" id="textAngle" class="control-slider" min="0" max="360" step="0.1" value="240" oninput="handleInteraction(this, 240)">
+                    </div>
+                    <div class="color-row">
+                        <div class="top-color-wrap ">
+                            <input type="color" id="textColor1" value="#ffffff" oninput="draw(false)">
+                        </div>
+                        <div class="top-color-wrap">
+                            <input type="color" id="textColor2" value="#ff0000" oninput="draw(false)" >
+                        </div>
+                    </div>
+                    <div class="slider-row">
+                        <span class="label-mini">비율</span>
+                        <input type="range" id="textRatio" class="control-slider" min="0" max="100" step="0.1" value="50" oninput="handleInteraction(this, 50)">
+                    </div>
+                </div>
+
+                <button id="btnDownload" onclick="downloadImage()">다운로드</button>
+            </div>
         </div>
-        <div class="top-color-wrap">
-          <input type="color" id="textColor" value="#ff0000" oninput="draw(false)">
+
+        <div class="editor-area">
+            <div class="y-axis-container">
+                <span class="y-label-top">세로 (Y)</span>
+                <input type="range" id="posY" class="y-slider-rotated" min="0" max="900" value="450" oninput="handleInteraction(this, 450)">
+            </div>
+
+            <div class="center-column">
+                <div style="position:relative;">
+                    <button class="detail-toggle-btn" onclick="toggleDetail()">상세 설정 ⚙️</button>
+                    <div class="preview-container" id="p-container" onmousedown="handleMouseDown(event)" onmouseup="handleMouseUp(event)">
+                        <canvas id="canvas" width="1600" height="900"></canvas>
+                    </div>
+                </div>
+                <div class="x-slider-wrap">
+                    <input type="range" id="posX" class="x-slider-bar" min="0" max="1600" value="800" oninput="handleInteraction(this, 800)">
+                    <span class="x-label-bottom">가로 (X)</span>
+                </div>
+            </div>
+
+            <div id="zoom-v-container">
+                <div class="pyramid-visual-track"></div>
+                <input type="range" id="zoomRange" class="wedge-zoom-v" min="1" max="3" step="0.01" value="1" oninput="applyZoom()">
+            </div>
+
+            <div id="detail-panel">
+                <div class="detail-item">
+                    <label>글꼴 및 스타일</label>
+                    <select id="fontFamily" onchange="refreshFont()">
+                        <option value="'Noto Sans KR'">본고딕</option>
+                        <option value="'League Spartan'">League Spartan</option>
+                        <option value="'Luckiest Guy'">Luckiest Guy</option>
+                        <option value="'Impact'">Impact </option>
+                        <option value="'Black Han Sans'">검은고딕</option>
+                        <option value="'pretendard'">pretendard</option>
+                        <option value="'Do Hyeon'">도현체</option>
+                        <option value="'Jua'" selected>주아체</option>
+                        <option value="'Nanum Gothic'">나눔고딕</option>
+                        <option value="'Nanum Myeongjo'">나눔명조</option>
+                        <option value="'Gothic A1'">고딕 A1</option>
+                        <option value="'Inter'">Inter</option>
+                        <option value="'IBM Plex Sans KR'">IBM Plex Sans</option>
+                        <option value="'Gowun Dodum'">고운돋움</option>
+                        <option value="'Gowun Batang'">고운바탕</option>
+                        <option value="'Orbit'">오르빗</option>
+                        <option value="'Bagel Fat One'">베이글 팻 원</option>
+                        <option value="'Dongle'">동글</option>
+                        <option value="'Black And White Picture'">흑백사진</option>
+                        <option value="'Sunflower'">해바라기</option>
+                        <option value="'Song Myung'">송명</option>
+                        <option value="'Poor Story'">푸어 스토리</option>
+                        <option value="'Nanum Pen Script'">나눔펜체</option>
+                        <option value="'Nanum Brush Script'">나눔붓체</option>
+                        <option value="'Gamja Flower'">감자꽃체</option>
+                        <option value="'Hi Melody'">하이멜로디</option>
+                        <option value="'Kirang Haerang'">기랑해랑</option>
+                        <option value="'Single Day'">싱글데이</option>
+                        <option value="'Cute Font'">큐트폰트</option>
+                        <option value="'Gaegu'">개구체</option>
+                        <option value="'Dokdo'">독도체</option>
+                        <option value="'East Sea Dokdo'">동해독도체</option>
+                        <option value="'Hahmlet'">함렛</option>
+                        <option value="'Yeon Sung'">연성체</option>
+                        <option value="'Gugi'">구기체</option>
+                    </select>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 8px; margin-top: 5px;">
+                        <div style="display:flex; flex-direction:column; gap:4px;">
+                            <button id="btnBold" class="flat-btn" onclick="toggleStyle('btnBold')">굵게</button>
+                            <div class="outline-btn-wrap">
+                                <input type="color" id="outlineColor" class="outline-picker" value="#000000" oninput="draw(false)">
+                                <button id="btnOutline" onclick="toggleStyle('btnOutline')">윤곽선</button>
+                            </div>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:4px;">
+                            <button id="btnItalic" class="flat-btn active" onclick="toggleStyle('btnItalic')">기울임</button>
+                            <button id="btnGlow" class="flat-btn" onclick="toggleStyle('btnGlow')">빛(Glow)</button>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:4px;">
+                            <button id="btnTextHard" class="flat-btn" onclick="toggleStyle('btnTextHard')">글씨 그라(H)</button>
+                            <button id="btnBgHard" class="flat-btn" onclick="toggleStyle('btnBgHard')">배경 그라(H)</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; flex-direction:column; gap:4px; margin-top:8px;">
+
+
+
+                        <div class="slider-compact-wrap">
+                           <span>굵기</span>
+                           <input type="range" id="weightRange" min="100" max="900" step="100" value="400" oninput="handleWeightChange(this)">
+                        </div>
+
+                        <div class="slider-compact-wrap">
+                           <span>크기</span>
+                           <input type="range" id="fontSize" min="10" max="500" value="180" oninput="handleInteraction(this, 180, true)">
+                        </div>
+
+                        <div class="slider-compact-wrap">
+                           <span>윤곽</span>
+                           <input type="range" id="outlineRange" min="0" max="50" step="1" value="15" oninput="handleInteraction(this, 15, false)">
+                        </div>
+
+                        <div class="slider-compact-wrap">
+                           <span>그림자</span>
+                           <input type="range" id="shadowBlur" min="0" max="100" value="0" oninput="handleInteraction(this, 0, false)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-item">
+                    <label>정렬 & 가이드</label>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div class="guide-control-group">
+                            <div class="thin-color-bar" id="crossBtnWrap" style="background:#ffffff;">
+                                <input type="color" value="#ffffff" oninput="updateBtnColor('crossBtnWrap', this.value); draw(false);">
+                            </div>
+                            <button id="guideCross" style="width:100%;" onclick="toggleGuide('guideCross')">십자선 OFF</button>
+                        </div>
+                        <div class="guide-control-group">
+                            <div class="thin-color-bar" id="hitboxBtnWrap" style="background:#00ff00;">
+                                <input type="color" value="#00ff00" oninput="updateBtnColor('hitboxBtnWrap', this.value); draw(false);">
+                            </div>
+                            <button id="guideHitbox" style="width:100%;" onclick="toggleGuide('guideHitbox')">포기한애 OFF</button>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:8px; margin-top:8px;">
+                        <button id="snapToggle" class="active" onclick="toggleSnap()" style="flex:1;">스크롤 스냅 ON</button>
+                        <button onclick="autoAlign()" style="flex:1;">자동 정렬</button>
+                    </div>
+                </div>
+
+                <div class="detail-item">
+                    <label>배경 이미지 설정</label>
+                    <button onclick="document.getElementById('bgImgInput').click()" style="width:100%; margin-bottom:8px;">이미지 불러오기</button>
+                    <input type="file" id="bgImgInput" hidden accept="image/*" onchange="handleImage(event)">
+                    <div class="slider-compact-wrap"><span>배율</span><input type="range" id="imgScale" min="0.1" max="10" step="0.01" value="1" oninput="handleInteraction(this, 1, false)"></div>
+                    <div class="slider-compact-wrap"><span>X</span><input type="range" id="imgX" min="-2000" max="2000" value="0" oninput="handleInteraction(this, 0, false)"></div>
+                    <div class="slider-compact-wrap"><span>Y</span><input type="range" id="imgY" min="-2000" max="2000" value="0" oninput="handleInteraction(this, 0, false)"></div>
+                </div>
+            </div>
         </div>
-        <button onclick="downloadImage()">다운로드</button>
-      </div>
     </div>
-
-    <div class="editor-area">
-      <div class="y-axis-container">
-        <span class="y-label-top">높이 (Y)</span>
-        <input type="range" id="posY" class="y-slider-rotated" min="0" max="900" value="450" oninput="handleInteraction(this, 450)">
-      </div>
-
-      <div class="center-column">
-        <div style="position:relative;">
-          <button class="detail-toggle-btn" onclick="toggleDetail()">상세 설정 ⚙️</button>
-          <div class="preview-container" id="p-container" onmousedown="handleMouseDown(event)" onmouseup="handleMouseUp(event)">
-            <canvas id="canvas" width="1600" height="900"></canvas>
-          </div>
-        </div>
-        <div class="x-slider-wrap">
-          <input type="range" id="posX" class="x-slider-bar" min="0" max="1600" value="800" oninput="handleInteraction(this, 800)">
-          <span class="x-label-bottom">가로 (X)</span>
-        </div>
-      </div>
-
-      <div id="zoom-v-container">
-        <div class="pyramid-visual-track"></div>
-        <input type="range" id="zoomRange" class="wedge-zoom-v" min="1" max="3" step="0.01" value="1" oninput="applyZoom()">
-      </div>
-
-      <div id="detail-panel">
-        <div class="detail-item">
-          <label>글꼴 및 스타일</label>
-          <select id="fontFamily" onchange="refreshFont()">
-            <option value="'Noto Sans KR'">본고딕</option>
-            <option value="'League Spartan'">League Spartan</option>
-            <option value="'Luckiest Guy'">Luckiest Guy</option>
-            <option value="'Impact'">Impact </option>
-            <option value="'Black Han Sans'">검은고딕</option>
-            <option value="'pretendard'">pretendard</option>
-            <option value="'Do Hyeon'">도현체</option>
-            <option value="'Jua'" selected>주아체</option>
-            <option value="'Nanum Gothic'">나눔고딕</option>
-            <option value="'Nanum Myeongjo'">나눔명조</option>
-            <option value="'Gothic A1'">고딕 A1</option>
-            <option value="'Inter'">Inter</option>
-            <option value="'IBM Plex Sans KR'">IBM Plex Sans</option>
-            <option value="'Gowun Dodum'">고운돋움</option>
-            <option value="'Gowun Batang'">고운바탕</option>
-            <option value="'Orbit'">오르빗</option>
-            <option value="'Bagel Fat One'">베이글 팻 원</option>
-            <option value="'Dongle'">동글</option>
-            <option value="'Black And White Picture'">흑백사진</option>
-            <option value="'Sunflower'">해바라기</option>
-            <option value="'Song Myung'">송명</option>
-            <option value="'Poor Story'">푸어 스토리</option>
-            <option value="'Nanum Pen Script'">나눔펜체</option>
-            <option value="'Nanum Brush Script'">나눔붓체</option>
-            <option value="'Gamja Flower'">감자꽃체</option>
-            <option value="'Hi Melody'">하이멜로디</option>
-            <option value="'Kirang Haerang'">기랑해랑</option>
-            <option value="'Single Day'">싱글데이</option>
-            <option value="'Cute Font'">큐트폰트</option>
-            <option value="'Gaegu'">개구체</option>
-            <option value="'Dokdo'">독도체</option>
-            <option value="'East Sea Dokdo'">동해독도체</option>
-            <option value="'Hahmlet'">함렛</option>
-            <option value="'Yeon Sung'">연성체</option>
-            <option value="'Gugi'">구기체</option>
-          </select>
-          <div style="display:flex; gap:8px; margin-top:5px; align-items:flex-start;">
-            <button id="btnBold" onclick="toggleStyle('btnBold')">굵게</button>
-            <button id="btnItalic" class="active" onclick="toggleStyle('btnItalic')">기울임</button>
-            <div style="display:flex; flex-direction:column; flex:1; align-items:center; gap:2px;">
-              <input type="range" id="weightRange" min="100" max="900" step="100" value="400" style="width:100%;" oninput="handleWeightChange(this)">
-              <span style="font-size: 9px; color: var(--text-sub); font-weight: bold;">굵기 조절</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="detail-item">
-          <label>정렬 & 가이드</label>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <div class="guide-control-group">
-              <div class="thin-color-bar" id="crossBtnWrap" style="background:#ffffff;">
-                <input type="color" value="#ffffff" oninput="updateBtnColor('crossBtnWrap', this.value); draw(false);">
-              </div>
-              <button id="guideCross" style="width:100%;" onclick="toggleGuide('guideCross')">십자선 OFF</button>
-            </div>
-            <div class="guide-control-group">
-              <div class="thin-color-bar" id="hitboxBtnWrap" style="background:#00ff00;">
-                <input type="color" value="#00ff00" oninput="updateBtnColor('hitboxBtnWrap', this.value); draw(false);">
-              </div>
-              <button id="guideHitbox" style="width:100%;" onclick="toggleGuide('guideHitbox')">포기한애 OFF</button>
-            </div>
-          </div>
-          <div style="display:flex; gap:8px; margin-top:8px;">
-            <button id="snapToggle" class="active" onclick="toggleSnap()" style="flex:1;">스크롤 스냅 ON</button>
-            <button onclick="autoAlign()" style="flex:1;">자동 정렬</button>
-          </div>
-        </div>
-
-        <div class="detail-item">
-          <label>글자 크기</label>
-          <input type="range" id="fontSize" min="50" max="800" value="180" oninput="handleInteraction(this, 180, true)">
-        </div>
-
-        <div class="detail-item">
-          <label>그림자</label>
-          <input type="range" id="shadowBlur" min="0" max="100" value="0" oninput="handleInteraction(this, 0, false)">
-        </div>
-
-        <div class="detail-item">
-          <label>배경 이미지 설정</label>
-          <button onclick="document.getElementById('bgImgInput').click()" style="width:100%; margin-bottom:8px;">이미지 불러오기</button>
-          <input type="file" id="bgImgInput" hidden accept="image/*" onchange="handleImage(event)">
-          <label>배율</label>
-          <input type="range" id="imgScale" min="0.1" max="10" step="0.01" value="1" oninput="handleInteraction(this, 1, false)">
-          <label>X 위치</label>
-          <input type="range" id="imgX" min="-2000" max="2000" value="0" oninput="handleInteraction(this, 0, false)">
-          <label>Y 위치</label>
-          <input type="range" id="imgY" min="-2000" max="2000" value="0" oninput="handleInteraction(this, 0, false)">
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <script>
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
-  
-  let bgImage = null, isBold = false, isItalic = true, showCross = false, showHitbox = false, snapEnabled = true;
-  let zoomLevel = 1, panX = 0, panY = 0, isPanning = false, startX = 0, startY = 0, mouseDownTime = 0, cachedMetrics = null;
 
-  function setTomorrowDate() {
-    const d = new Date(); d.setDate(d.getDate() + 1);
-    const yyyy = d.getFullYear(), mm = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0');
-    document.getElementById('mainText').value = `${yyyy}.${mm}.${dd}.`;
-  }
+  let isFrameRequested = false;
 
-  function getVisualMetrics(text, fontStyle) {
-    const tCanvas = document.createElement('canvas'); tCanvas.width = 1600; tCanvas.height = 900;
-    const tctx = tCanvas.getContext('2d');
-    tctx.font = fontStyle; tctx.textAlign = 'center'; tctx.textBaseline = 'middle';
-    tctx.fillText(text, 800, 450);
-    const data = tctx.getImageData(0, 0, 1600, 900).data;
-    let minX = 1600, maxX = 0, minY = 900, maxY = 0, hasPixels = false;
-    for (let y = 0; y < 900; y += 4) {
-      for (let x = 0; x < 1600; x += 4) {
-        if (data[(y * 1600 + x) * 4 + 3] > 10) {
-          if (x < minX) minX = x; if (x > maxX) maxX = x;
-          if (y < minY) minY = y; if (y > maxY) maxY = y; hasPixels = true;
+    // 캔버스 요소 및 컨텍스트 가져오기
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // 상태 변수 선언 (생략 없이 모두 나열)
+    let bgImage = null; // 배경 이미지 객체
+    let isBold = false; // 굵게 여부
+    let isItalic = true; // 기울임 여부
+    let isOutline = false; // 외곽선 여부
+    let isGlow = false; // 네온 효과 여부
+    let isTextHard = false; // 텍스트 그라데이션 경계 (Hard/Soft)
+    let isBgHard = false; // 배경 그라데이션 경계 (Hard/Soft)
+    
+    // 가이드 및 스냅 기능 변수
+    let showCross = false; // 십자선 표시 여부
+    let showHitbox = false; // 히트박스(포기한애) 표시 여부
+    let snapEnabled = true; // 스크롤 스냅 기능 활성화 여부
+    
+    // 줌 및 팬(Pan) 기능 관련 변수
+    let zoomLevel = 1; // 현재 줌 배율
+    let panX = 0; // X축 이동량
+    let panY = 0; // Y축 이동량
+    let isPanning = false; // 현재 드래그(팬) 중인지 여부
+    let startX = 0; // 드래그 시작 X 좌표
+    let startY = 0; // 드래그 시작 Y 좌표
+    let mouseDownTime = 0; // 마우스 클릭 시간 (클릭 vs 드래그 구분용)
+    
+    // 텍스트 메트릭 캐싱 (성능 최적화는 아니지만 로직 유지를 위해 사용)
+    let cachedMetrics = null;
+
+    // [날짜 설정 함수]
+    // 페이지 로드 시 자동으로 내일 날짜를 텍스트 박스에 입력합니다.
+    function setTomorrowDate() {
+        const d = new Date(); 
+        d.setDate(d.getDate() + 1); // 하루 더하기
+        
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0'); // 두 자리 맞추기
+        const dd = String(d.getDate()).padStart(2, '0'); // 두 자리 맞추기
+        
+        // 입력창 값 업데이트
+        document.getElementById('mainText').value = `${yyyy}.${mm}.${dd}.`;
+    }
+
+    // [텍스트 시각적 메트릭 계산 함수]
+    // 캔버스에 텍스트를 그려보고 실제 픽셀이 존재하는 영역을 계산합니다.
+    // 히트박스나 정렬 보정에 사용됩니다.
+    function getVisualMetrics(text, fontStyle) {
+        // 임시 캔버스 생성
+        const tCanvas = document.createElement('canvas'); 
+        tCanvas.width = 1600; 
+        tCanvas.height = 900;
+        const tctx = tCanvas.getContext('2d');
+        
+        // 텍스트 설정 및 그리기
+        tctx.font = fontStyle; 
+        tctx.textAlign = 'center'; 
+        tctx.textBaseline = 'middle';
+        tctx.fillText(text, 800, 450); // 중앙에 그리기
+        
+        // 픽셀 데이터 추출
+        const data = tctx.getImageData(0, 0, 1600, 900).data;
+        
+        let minX = 1600, maxX = 0, minY = 900, maxY = 0;
+        let hasPixels = false;
+        
+        // 모든 픽셀을 순회하며 경계 찾기 (4씩 건너뛰며 검사)
+        for (let y = 0; y < 900; y += 4) {
+            for (let x = 0; x < 1600; x += 4) {
+                // 알파 값이 존재하면(보이는 픽셀이면)
+                if (data[(y * 1600 + x) * 4 + 3] > 10) {
+                    if (x < minX) minX = x; 
+                    if (x > maxX) maxX = x;
+                    if (y < minY) minY = y; 
+                    if (y > maxY) maxY = y; 
+                    hasPixels = true;
+                }
+            }
         }
-      }
+        
+        // 결과 반환
+        if (hasPixels) {
+            return { 
+                cx: (minX + maxX) / 2, 
+                cy: (minY + maxY) / 2, 
+                minX: minX, 
+                maxX: maxX, 
+                minY: minY, 
+                maxY: maxY 
+            };
+        } else {
+            return null; // 픽셀이 없으면(공백 등) null 반환
+        }
     }
-    return hasPixels ? { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2, minX, maxX, minY, maxY } : null;
-  }
 
-  function handleBgColorChange() { bgImage = null; document.getElementById('bgImgInput').value = ''; draw(false); }
+    // [그라데이션 생성 함수]
+    // 배경 및 텍스트에 적용할 선형 그라데이션 객체를 생성하여 반환합니다.
+    function getGradient(ctx, angle, c1, c2, isHard, ratio, width, height, isForText = false, tx = 800, ty = 450) {
+        let cx = width / 2;
+        let cy = height / 2;
+        let diag = Math.sqrt(width * width + height * height);
+        
+        // 글씨 그라데이션일 경우 범위를 글씨 주변으로 좁힙니다.
+        if (isForText) {
+            cx = tx;
+            cy = ty;
+            diag = 500; // 그라데이션 가시성 증폭을 위해 범위 축소
+        }
 
-  function draw(updateMetrics = true) {
-    const text = document.getElementById('mainText').value;
-    const font = document.getElementById('fontFamily').value;
-    const fontSize = document.getElementById('fontSize').value;
-    const weightVal = document.getElementById('weightRange').value; 
-    
-    const styleStr = `${isItalic ? 'italic' : 'normal'} ${weightVal} ${fontSize}px ${font}`;
-    
-    if (updateMetrics || !cachedMetrics) cachedMetrics = getVisualMetrics(text, styleStr);
-    
-    const bgColor = document.getElementById('bgColor').value;
-    ctx.fillStyle = bgColor;
-    ctx.fillRect(0, 0, 1600, 900);
-    
-    if (bgImage) {
-      const scale = parseFloat(document.getElementById('imgScale').value);
-      const dw = bgImage.width * scale, dh = bgImage.height * scale;
-      const dx = 800 - (dw/2) + parseInt(document.getElementById('imgX').value);
-      const dy = 450 - (dh/2) - parseInt(document.getElementById('imgY').value);
-      ctx.drawImage(bgImage, dx, dy, dw, dh);
+        const dist = diag / 2; 
+        const rad = (angle * Math.PI) / 180; // 각도를 라디안으로 변환
+        
+        // 그라데이션 시작점과 끝점 계산
+        const x1 = cx - Math.cos(rad) * dist;
+        const y1 = cy - Math.sin(rad) * dist;
+        const x2 = cx + Math.cos(rad) * dist;
+        const y2 = cy + Math.sin(rad) * dist;
+
+        // 그라데이션 객체 생성
+        const grad = ctx.createLinearGradient(x1, y1, x2, y2);
+        const r = ratio / 100;
+        
+        // 하드 그라데이션 처리
+        if (isHard) {
+            grad.addColorStop(0, c1);
+            grad.addColorStop(r, c1);
+            grad.addColorStop(r, c2);
+            grad.addColorStop(1, c2);
+        } else {
+            // 부드러운 그라데이션 처리: r(비율) 지점을 인식하도록 수정
+            grad.addColorStop(0, c1);
+            grad.addColorStop(Math.max(0, r - 0.2), c1); // 추가: 슬라이더 위치(r)까지 색1 유지
+            grad.addColorStop(1, c2); // 그 후 색2로 부드럽게 전환
+        }
+        return grad;
+    }
+
+    // [배경 이미지 리셋 함수]
+    // 배경색을 변경할 때 이미지가 있으면 제거합니다.
+    function resetBgImg() {
+        bgImage = null;
+    }
+
+    // [메인 그리기 함수]
+    // 캔버스의 모든 내용을 지우고 다시 그립니다.
+    // updateMetrics: 텍스트 메트릭을 다시 계산할지 여부
+    function draw(updateMetrics = true) {
+        // DOM 요소에서 현재 값 가져오기
+        const text = document.getElementById('mainText').value;
+        const font = document.getElementById('fontFamily').value;
+        const fontSize = document.getElementById('fontSize').value;
+        const weightVal = document.getElementById('weightRange').value; 
+        
+        // 폰트 스타일 문자열 구성
+        const styleStr = `${isItalic ? 'italic' : 'normal'} ${weightVal} ${fontSize}px ${font}`;
+        
+        // 메트릭 업데이트가 필요하거나 캐시가 없으면 계산
+        if (updateMetrics || !cachedMetrics) {
+            cachedMetrics = getVisualMetrics(text, styleStr);
+        }
+        
+        // 배경 관련 값 가져오기
+        const bgC1 = document.getElementById('bgColor1').value;
+        const bgC2 = document.getElementById('bgColor2').value;
+        const bgAng = document.getElementById('bgAngle').value;
+        const bgRat = document.getElementById('bgRatio').value;
+        
+        // 배경 그라데이션 적용 및 채우기
+        ctx.fillStyle = getGradient(ctx, bgAng, bgC1, bgC2, !isBgHard, bgRat, 1600, 900);
+        ctx.fillRect(0, 0, 1600, 900);
+        
+        // 배경 이미지가 있으면 그리기
+        if (bgImage) {
+            const scale = parseFloat(document.getElementById('imgScale').value);
+            const dw = bgImage.width * scale;
+            const dh = bgImage.height * scale;
+            const dx = 800 - (dw / 2) + parseInt(document.getElementById('imgX').value);
+            const dy = 450 - (dh / 2) - parseInt(document.getElementById('imgY').value);
+            ctx.drawImage(bgImage, dx, dy, dw, dh);
+        }
+        
+        // 텍스트 위치 계산
+        let tx = parseInt(document.getElementById('posX').value);
+        let ty = 900 - parseInt(document.getElementById('posY').value); // Y축은 역방향
+        
+        // 텍스트 시각적 중심 보정
+        if (cachedMetrics) { 
+            tx += (800 - cachedMetrics.cx); 
+            ty += (450 - cachedMetrics.cy); 
+        }
+        
+        // 텍스트 효과 변수 가져오기
+        const blur = parseInt(document.getElementById('shadowBlur').value);
+        const textC1 = document.getElementById('textColor1').value;
+        const textC2 = document.getElementById('textColor2').value;
+        const textAng = document.getElementById('textAngle').value;
+        const textRat = document.getElementById('textRatio').value;
+
+// 그림자 및 글로우 효과 처리
+        if (isGlow) {
+            // 글씨 색상을 그대로 태우기 위해 필터를 사용합니다.
+            ctx.filter = 'blur(12px)'; // 15에서 12로 낮춰 더 은은하게 조정
+        } else {
+            ctx.filter = 'none'; // Glow가 아닐 때는 필터 해제
+            if (blur > 0) {
+                ctx.shadowColor = 'rgba(0,0,0,0.7)'; 
+                ctx.shadowBlur = blur;
+                ctx.shadowOffsetX = blur * 0.4; 
+                ctx.shadowOffsetY = blur * 0.4;
+            } else { 
+                ctx.shadowColor = 'transparent'; 
+                ctx.shadowBlur = 0; 
+            }
+        }
+        
+        // 폰트 설정 적용
+        ctx.font = styleStr; 
+        ctx.textAlign = 'center'; 
+        ctx.textBaseline = 'middle';
+        
+        // 외곽선 그리기
+        if (isOutline) {
+            ctx.strokeStyle = document.getElementById('outlineColor').value;
+            ctx.lineWidth = parseInt(document.getElementById('outlineRange').value);
+            ctx.lineJoin = 'round';
+            ctx.strokeText(text, tx, ty);
+        }
+        
+        // 텍스트 그라데이션 적용 및 채우기
+        ctx.fillStyle = getGradient(ctx, textAng, textC1, textC2, !isTextHard, textRat, 1600, 900, true, tx, ty);
+
+        // --- 여기서부터 수정: Glow가 글씨색을 인식하도록 두 번 그립니다 ---
+        if (isGlow) {
+            ctx.fillText(text, tx, ty); // 1. 필터가 적용된 상태로 그려서 '번짐' 생성
+            ctx.filter = 'none';        // 2. 본체 글씨를 위해 필터 즉시 해제
+        }
+        ctx.fillText(text, tx, ty);     // 3. 선명한 본체 글씨 덮어쓰기
+        // ---------------------------------------------------------
+        
+        // 초기화 (가이드라인 및 다음 드로잉에 영향 안 주게)
+        ctx.shadowBlur = 0; 
+        ctx.shadowOffsetX = 0; 
+        ctx.shadowOffsetY = 0;
+        ctx.filter = 'none'; // 필터 완전히 리셋
+
+
+
+        
+        // 십자선 가이드 그리기
+        if (showCross) {
+            ctx.strokeStyle = document.querySelector('#crossBtnWrap input').value; 
+            ctx.lineWidth = 2;
+            ctx.beginPath(); 
+            ctx.moveTo(800, 0); 
+            ctx.lineTo(800, 900); 
+            ctx.moveTo(0, 450); 
+            ctx.lineTo(1600, 450); 
+            ctx.stroke();
+        }
+
+        // 히트박스 가이드 그리기
+        if (showHitbox && cachedMetrics) {
+            ctx.strokeStyle = document.querySelector('#hitboxBtnWrap input').value; 
+            ctx.lineWidth = 2;
+            const w = cachedMetrics.maxX - cachedMetrics.minX;
+            const h = cachedMetrics.maxY - cachedMetrics.minY;
+            // 박스 그리기
+            ctx.strokeRect(tx - w / 2, ty - h / 2, w, h);
+            // 내부 십자 표시
+            ctx.beginPath(); 
+            ctx.moveTo(tx - w / 2, ty); 
+            ctx.lineTo(tx + w / 2, ty); 
+            ctx.moveTo(tx, ty - h / 2); 
+            ctx.lineTo(tx, ty + h / 2); 
+            ctx.stroke();
+        }
+    }
+
+    // [인터랙션 핸들러 함수]
+    // 슬라이더 등의 입력이 변할 때 호출됩니다.
+    function handleInteraction(el, center, heavy = false) {
+        const val = parseFloat(el.value);
+        
+        // 자석(스크롤 스냅) 로직
+        // 값이 중앙 부근에 오면 자동으로 중앙값으로 보정합니다.
+        if (snapEnabled) {
+            const range = el.max - el.min;
+            const snapThres = range * 0.025; // 전체 범위의 2.5% 이내면 스냅
+            
+            if (Math.abs(val - center) < snapThres) {
+                el.value = center;
+            }
+            
+            // 각도 슬라이더의 경우 90도 단위로 스냅
+            if (el.id === 'bgAngle' || el.id === 'textAngle') {
+                [0, 90, 180, 270, 360].forEach(s => {
+                    if (Math.abs(val - s) < 10) el.value = s;
+                });
+            }
+        }
+        
+        // 슬라이더 배경 시각화 업데이트
+        // 현재 값에 따라 배경 그라데이션을 조정하여 진행률을 표시합니다.
+        const newVal = parseFloat(el.value);
+        const min = parseFloat(el.min);
+        const max = parseFloat(el.max);
+        
+        let pStart = ((center - min) / (max - min)) * 100;
+        let pEnd = ((newVal - min) / (max - min)) * 100;
+        
+        // 값이 중앙과 같으면 트랙 색상만 표시
+        if (Math.abs(pStart - pEnd) < 0.1) {
+            el.style.background = `var(--slider-track)`;
+        } else {
+            // 값이 다르면 구간을 하얀색으로 표시
+            if (pStart > pEnd) {
+                // 시작점이 끝점보다 크면 스왑
+                [pStart, pEnd] = [pEnd, pStart];
+            }
+            el.style.background = `linear-gradient(to right, var(--slider-track) 0%, var(--slider-track) ${pStart}%, #fff ${pStart}%, #fff ${pEnd}%, var(--slider-track) ${pEnd}%, var(--slider-track) 100%)`;
+        }
+        
+        // 화면 다시 그리기
+        draw(heavy);
+    }
+
+    // [폰트 굵기 변경 핸들러]
+    // 굵기 슬라이더 값에 따라 '굵게' 버튼의 상태를 동기화합니다.
+    function handleWeightChange(el) {
+        handleInteraction(el, 400, true);
+        const btn = document.getElementById('btnBold');
+        if (parseInt(el.value) >= 700) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    }
+
+    // [스타일 토글 함수]
+    // 굵게, 기울임, 외곽선 등의 버튼 클릭을 처리합니다.
+    function toggleStyle(id) {
+        const btn = document.getElementById(id); 
+        btn.classList.toggle('active');
+        const isActive = btn.classList.contains('active');
+
+        // 굵게 버튼 처리
+        if (id === 'btnBold') {
+            const weightSlider = document.getElementById('weightRange');
+            weightSlider.value = isActive ? 700 : 400;
+            handleWeightChange(weightSlider);
+        }
+        
+        // 각 상태 변수 업데이트
+        isItalic = document.getElementById('btnItalic').classList.contains('active');
+        isOutline = document.getElementById('btnOutline').classList.contains('active');
+        isGlow = document.getElementById('btnGlow').classList.contains('active');
+        
+        if (id === 'btnTextHard') isTextHard = isActive;
+        if (id === 'btnBgHard') isBgHard = isActive;
+        
+        draw(true);
+    }
+
+    // [가이드 토글 함수]
+    // 십자선 및 히트박스 가이드를 켜고 끕니다.
+    function toggleGuide(id) {
+        const btn = document.getElementById(id); 
+        btn.classList.toggle('active');
+        const isOn = btn.classList.contains('active');
+        
+        if (id === 'guideCross') { 
+            showCross = isOn; 
+            btn.innerText = `십자선 ${isOn ? 'ON' : 'OFF'}`; 
+        } else { 
+            showHitbox = isOn; 
+            btn.innerText = `히트박스 ${isOn ? 'ON' : 'OFF'}`; 
+        }
+        draw(false);
+    }
+
+    // [이미지 다운로드 함수]
+    // 가이드를 숨기고 현재 캔버스를 PNG로 저장합니다.
+    function downloadImage() {
+        const originalCross = showCross; 
+        const originalHitbox = showHitbox;
+        
+        // 캡처를 위해 가이드 숨김
+        showCross = false; 
+        showHitbox = false; 
+        draw(false);
+        
+        // 다운로드 링크 생성 및 클릭
+        const link = document.createElement('a'); 
+        link.download = 'thumbnail.png';
+        link.href = canvas.toDataURL('image/png'); 
+        link.click();
+        
+        // 가이드 상태 복구
+        showCross = originalCross; 
+        showHitbox = originalHitbox; 
+        draw(false);
+    }
+
+    // [상세 패널 토글 함수]
+    // 바디에 클래스를 추가하여 상세 패널을 열거나 닫습니다.
+    function toggleDetail() { 
+        document.body.classList.toggle('detailed-mode'); 
+    }
+
+    // [스냅 기능 토글 함수]
+    function toggleSnap() { 
+        snapEnabled = !snapEnabled; 
+        const btn = document.getElementById('snapToggle'); 
+        btn.classList.toggle('active'); 
+        btn.innerText = `스크롤 스냅 ${snapEnabled ? 'ON' : 'OFF'}`; 
     }
     
-    let tx = parseInt(document.getElementById('posX').value);
-    let ty = 900 - parseInt(document.getElementById('posY').value);
-    if (cachedMetrics) { tx += (800 - cachedMetrics.cx); ty += (450 - cachedMetrics.cy); }
-    
-    const blur = parseInt(document.getElementById('shadowBlur').value);
-    if (blur > 0) {
-      ctx.shadowColor = 'rgba(0,0,0,0.7)'; ctx.shadowBlur = blur;
-      ctx.shadowOffsetX = blur * 0.4; ctx.shadowOffsetY = blur * 0.4;
-    } else { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; }
-    
-    const textColor = document.getElementById('textColor').value;
-    ctx.fillStyle = textColor;
-    ctx.font = styleStr; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    
-    ctx.fillText(text, tx, ty);
-    
-    ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
-    
-    if (showCross) {
-      ctx.strokeStyle = document.querySelector('#crossBtnWrap input').value; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(800, 0); ctx.lineTo(800, 900); ctx.moveTo(0, 450); ctx.lineTo(1600, 450); ctx.stroke();
+    // [자동 정렬 함수]
+    // 텍스트 위치를 중앙으로 초기화합니다.
+    function autoAlign() { 
+        const x = document.getElementById('posX');
+        const y = document.getElementById('posY'); 
+        x.value = 800; 
+        y.value = 450; 
+        handleInteraction(x, 800); 
+        handleInteraction(y, 450); 
     }
-    if (showHitbox && cachedMetrics) {
-      ctx.strokeStyle = document.querySelector('#hitboxBtnWrap input').value; ctx.lineWidth = 2;
-      const w = cachedMetrics.maxX - cachedMetrics.minX, h = cachedMetrics.maxY - cachedMetrics.minY;
-      ctx.strokeRect(tx - w/2, ty - h/2, w, h);
-      ctx.beginPath(); ctx.moveTo(tx - w/2, ty); ctx.lineTo(tx + w/2, ty); ctx.moveTo(tx, ty - h/2); ctx.lineTo(tx, ty + h/2); ctx.stroke();
+
+    // [버튼 색상 업데이트 함수]
+    // 가이드 라인의 색상을 변경하고 버튼 배경색을 업데이트합니다.
+    function updateBtnColor(id, color) { 
+        document.getElementById(id).style.background = color; 
+        draw(false); 
     }
-  }
 
-  function handleInteraction(el, center, heavy = false) {
-    if (snapEnabled) {
-      const range = el.max - el.min;
-      if (Math.abs(el.value - center) < range * 0.02) el.value = center;
+    // [배경 이미지 파일 처리 함수]
+    function handleImage(e) { 
+        const f = e.target.files[0]; 
+        if (f) { 
+            const r = new FileReader(); 
+            r.onload = (ev) => {
+                bgImage = new Image(); 
+                bgImage.onload = () => draw(false); 
+                bgImage.src = ev.target.result;
+            }; 
+            r.readAsDataURL(f); 
+        } 
     }
-    const val = parseFloat(el.value), min = parseFloat(el.min), max = parseFloat(el.max);
-    let pStart = ((center - min) / (max - min)) * 100, pEnd = ((val - min) / (max - min)) * 100;
-    if (Math.abs(pStart - pEnd) < 0.1) el.style.background = `var(--slider-track)`;
-    else {
-      if (pStart > pEnd) [pStart, pEnd] = [pEnd, pStart];
-      el.style.background = `linear-gradient(to right, var(--slider-track) 0%, var(--slider-track) ${pStart}%, #fff ${pStart}%, #fff ${pEnd}%, var(--slider-track) ${pEnd}%, var(--slider-track) 100%)`;
+
+    // [마우스 다운 핸들러]
+    // 캔버스 클릭 시 드래그 시작 또는 줌 모드 전환 준비를 합니다.
+    function handleMouseDown(e) { 
+        mouseDownTime = Date.now(); 
+        
+        // 줌 모드일 때만 팬(이동) 기능 활성화
+        if (document.body.classList.contains('zoom-mode')) { 
+            isPanning = true; 
+            startX = e.clientX - panX; 
+            startY = e.clientY - panY; 
+            document.addEventListener('mousemove', pan); 
+        } 
     }
-    draw(heavy);
-  }
 
-  function handleWeightChange(el) {
-    handleInteraction(el, 400, true);
-    const btn = document.getElementById('btnBold');
-    if (parseInt(el.value) >= 700) {
-      if (!btn.classList.contains('active')) btn.classList.add('active');
-    } else {
-      if (btn.classList.contains('active')) btn.classList.remove('active');
+    // [마우스 업 핸들러]
+    // 클릭이 짧으면 줌 모드를 토글하고, 길면 드래그를 끝냅니다.
+    function handleMouseUp() { 
+        // 200ms 이내의 짧은 클릭이면 줌 모드 전환
+        if (Date.now() - mouseDownTime < 200) {
+            toggleZoomMode(); 
+        }
+        isPanning = false; 
+        document.removeEventListener('mousemove', pan); 
     }
-  }
 
-  function toggleStyle(id) {
-    const btn = document.getElementById(id); btn.classList.toggle('active');
-    if (id === 'btnBold') {
-      const weightSlider = document.getElementById('weightRange');
-      weightSlider.value = btn.classList.contains('active') ? 700 : 400;
-      handleWeightChange(weightSlider);
+    // [줌 모드 토글 함수]
+    // 화면 확대/축소 모드를 전환합니다.
+    function toggleZoomMode() {
+        const b = document.body;
+        const zr = document.getElementById('zoomRange');
+        
+        if (!b.classList.contains('zoom-mode')) { 
+            // 줌 모드 진입
+            b.classList.add('zoom-mode'); 
+            zoomLevel = 1.15; 
+            zr.value = 1.15; 
+        } else { 
+            // 줌 모드 해제 (원상 복구)
+            b.classList.remove('zoom-mode'); 
+            zoomLevel = 1; 
+            panX = 0; 
+            panY = 0; 
+        }
+        updateCanvasTransform();
     }
-    if (id === 'btnItalic') isItalic = btn.classList.contains('active');
-    draw(true);
-  }
 
-  function toggleGuide(id) {
-    const btn = document.getElementById(id); btn.classList.toggle('active');
-    const isOn = btn.classList.contains('active');
-    if (id === 'guideCross') { showCross = isOn; btn.innerText = `십자선 ${isOn?'ON':'OFF'}`; }
-    else { showHitbox = isOn; btn.innerText = `히트박스 ${isOn?'ON':'OFF'}`; }
-    draw(false);
-  }
+    // [팬(이동) 함수]
+    // 마우스 이동에 따라 캔버스 위치를 업데이트합니다.
+    function pan(e) { 
+        if (isPanning) { 
+            panX = e.clientX - startX; 
+            panY = e.clientY - startY; 
+            updateCanvasTransform(); 
+        } 
+    }
 
-  function downloadImage() {
-    const originalCross = showCross; const originalHitbox = showHitbox;
-    showCross = false; showHitbox = false; draw(false);
-    const link = document.createElement('a'); link.download = 'thumbnail.png';
-    link.href = canvas.toDataURL('image/png'); link.click();
-    showCross = originalCross; showHitbox = originalHitbox; draw(false);
-  }
+    // [캔버스 변형 적용 함수]
+    // 현재 줌 레벨과 이동 좌표를 CSS transform에 적용합니다.
+    function updateCanvasTransform() { 
+        canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`; 
+    }
 
-  function toggleDetail() { document.body.classList.toggle('detailed-mode'); }
-  function toggleSnap() { snapEnabled = !snapEnabled; const btn = document.getElementById('snapToggle'); btn.classList.toggle('active'); btn.innerText = `스크롤 스냅 ${snapEnabled?'ON':'OFF'}`; }
-  function autoAlign() { const x = document.getElementById('posX'), y = document.getElementById('posY'); x.value = 800; y.value = 450; handleInteraction(x, 800); handleInteraction(y, 450); }
-  function updateBtnColor(id, color) { document.getElementById(id).style.background = color; draw(false); }
-  function handleImage(e) { const f = e.target.files[0]; if(f){ const r = new FileReader(); r.onload=(ev)=>{bgImage=new Image(); bgImage.onload=()=>draw(false); bgImage.src=ev.target.result;}; r.readAsDataURL(f); } }
+    // [수동 줌 적용 함수]
+    // 피라미드 슬라이더로 줌을 조절할 때 호출됩니다.
+    function applyZoom() { 
+        zoomLevel = parseFloat(document.getElementById('zoomRange').value); 
+        updateCanvasTransform(); 
+    }
 
-  function handleMouseDown(e) { mouseDownTime = Date.now(); if (document.body.classList.contains('zoom-mode')) { isPanning = true; startX = e.clientX - panX; startY = e.clientY - panY; document.addEventListener('mousemove', pan); } }
-  function handleMouseUp() { if (Date.now() - mouseDownTime < 200) toggleZoomMode(); isPanning = false; document.removeEventListener('mousemove', pan); }
-  function toggleZoomMode() {
-    const b = document.body, zr = document.getElementById('zoomRange');
-    if (!b.classList.contains('zoom-mode')) { b.classList.add('zoom-mode'); zoomLevel = 1.15; zr.value = 1.15; }
-    else { b.classList.remove('zoom-mode'); zoomLevel = 1; panX = 0; panY = 0; }
-    updateCanvasTransform();
-  }
-  function pan(e) { if (isPanning) { panX = e.clientX - startX; panY = e.clientY - startY; updateCanvasTransform(); } }
-  function updateCanvasTransform() { canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`; }
-  function applyZoom() { zoomLevel = parseFloat(document.getElementById('zoomRange').value); updateCanvasTransform(); }
+    // [폰트 새로고침 함수]
+    // 폰트 변경 시 브라우저가 렌더링을 제대로 못하는 경우를 대비해 스타일을 잠시 토글합니다.
+    function refreshFont() {
+        const savedWeight = document.getElementById('weightRange').value;
+        const delay = 20;
+        
+        setTimeout(() => { toggleStyle('btnBold'); }, 0);
+        setTimeout(() => { toggleStyle('btnBold'); }, delay);
+        
+        setTimeout(() => { 
+            const weightSlider = document.getElementById('weightRange');
+            weightSlider.value = savedWeight;
+            handleWeightChange(weightSlider);
+            draw(true); 
+        }, delay * 2);
+    }
 
-  // 폰트 변경 시 굵기 값을 유지하도록 수정한 함수
-  function refreshFont() {
-    const savedWeight = document.getElementById('weightRange').value;
-    const delay = 20;
-    setTimeout(() => { toggleStyle('btnBold'); }, 0);
-    setTimeout(() => { toggleStyle('btnBold'); }, delay);
-    setTimeout(() => { toggleStyle('btnItalic'); }, delay * 2);
-    setTimeout(() => { toggleStyle('btnItalic'); }, delay * 3);
-    setTimeout(() => { toggleGuide('guideHitbox'); }, delay * 4);
-    setTimeout(() => { toggleGuide('guideHitbox'); }, delay * 5);
-    setTimeout(() => { 
-      const weightSlider = document.getElementById('weightRange');
-      weightSlider.value = savedWeight;
-      handleWeightChange(weightSlider);
-      draw(true); 
-    }, delay * 6);
-  }
-
-  window.onload = () => {
-    setTomorrowDate();
-    [['posX', 800], ['posY', 450], ['weightRange', 400], ['fontSize', 180], ['shadowBlur', 0], ['imgScale', 1], ['imgX', 0], ['imgY', 0]].forEach(i => handleInteraction(document.getElementById(i[0]), i[1]));
-    draw(true);
-    setTimeout(() => draw(true), 100);
-  };
+    // [윈도우 로드 이벤트]
+    // 초기화 작업을 수행합니다.
+    window.onload = () => {
+        setTomorrowDate();
+        
+        // 초기 값 설정을 위한 배열 순회
+        // 각 컨트롤의 ID와 초기값을 매핑하여 초기화합니다.
+        const initControls = [
+            ['posX', 800], 
+            ['posY', 450], 
+            ['weightRange', 400], 
+            ['fontSize', 180], 
+            ['shadowBlur', 0], 
+            ['imgScale', 1], 
+            ['imgX', 0], 
+            ['imgY', 0], 
+            ['bgAngle', 240], 
+            ['textAngle', 240], 
+            ['bgRatio', 50], 
+            ['textRatio', 50], 
+            ['outlineRange', 15]
+        ];
+        
+        initControls.forEach(i => {
+            const el = document.getElementById(i[0]);
+            if(el) {
+                // 초기값으로 인터랙션 핸들러 호출하여 시각화 업데이트
+                handleInteraction(el, i[1]);
+            }
+        });
+        
+        // 초기 그리기 실행
+        draw(true);
+        
+        // 폰트 로딩 시간차 등을 고려하여 잠시 후 한 번 더 그리기
+        setTimeout(() => draw(true), 100);
+    };
 </script>
 </body>
 </html>
