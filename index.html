@@ -42,6 +42,7 @@
         스크롤을 방지하고 화면 중앙에 콘텐츠를 배치합니다.
     */
     body {
+        
         background-color: var(--bg-dark);
         color: var(--text-main);
         font-family: 'Noto Sans KR', sans-serif;
@@ -857,13 +858,23 @@
     .right-group .label-mini {
         text-align: right;
     }
+    
+    #debug-text {
+        position: fixed;
+        top: 0;
+        left: 0;
+        color: #0f0;
+        font-family: 'Inter', sans-serif;
+        z-index: 9999;
+    }
+
 } 
 
 
 </style>
 </head>
 <body id="body">
-
+<div id="debug-text">테스트용</div>
 <div id="layout-container">
     <div id="app-wrapper">
         
